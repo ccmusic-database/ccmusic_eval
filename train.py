@@ -62,22 +62,22 @@ def prepare_data(labelv):
         return ds, classes, [], use_hf
 
 
-def load_data(ds, input_size, spect, use_hf, batch_size=4, shuffle=True, num_workers=2):
+def load_data(ds, input_size, spect, use_hf, labelv, batch_size=4, shuffle=True, num_workers=2):
     print('Loadeding data...')
     if use_hf:
         trainset = ds['train'].with_transform(
-            partial(transform, spect=spect, input_size=input_size))
+            partial(transform, spect=spect, input_size=input_size, labelv=labelv))
         validset = ds['validation'].with_transform(
-            partial(transform, spect=spect, input_size=input_size))
+            partial(transform, spect=spect, input_size=input_size, labelv=labelv))
         testset = ds['test'].with_transform(
-            partial(transform, spect=spect, input_size=input_size))
+            partial(transform, spect=spect, input_size=input_size, labelv=labelv))
     else:
         trainset = ds['train']._hf_ds.with_transform(
-            partial(transform, spect=spect, input_size=input_size))
+            partial(transform, spect=spect, input_size=input_size, labelv=labelv))
         validset = ds['validation']._hf_ds.with_transform(
-            partial(transform, spect=spect, input_size=input_size))
+            partial(transform, spect=spect, input_size=input_size, labelv=labelv))
         testset = ds['test']._hf_ds.with_transform(
-            partial(transform, spect=spect, input_size=input_size))
+            partial(transform, spect=spect, input_size=input_size, labelv=labelv))
 
     traLoader = DataLoader(trainset, batch_size=batch_size,
                            shuffle=shuffle, num_workers=num_workers)
@@ -138,14 +138,13 @@ def eval_model_test(model, spect, labelv, testLoader, classes):
 
 
 def save_log(start_time, finish_time, cls_report, cm, log_dir, classes):
-    log_backbone = 'Backbone      : ' + args.model
-    log_spect = 'Spect type    : ' + args.spect
-    log_start_time = 'Start time    : ' + time_stamp(start_time)
-    log_finish_time = 'Finish time   : ' + time_stamp(finish_time)
-    log_time_cost = 'Time cost     : ' + \
-        str((finish_time - start_time).seconds) + 's'
-    log_fullfinetune = 'Full finetune : ' + str(args.fullfinetune)
-    log_focal_loss = 'Focal loss    : ' + str(args.fl)
+    log_backbone = f'Backbone      : {args.model}'
+    log_spect = f'Spect type    : {args.spect}'
+    log_start_time = f'Start time    : {time_stamp(start_time)}'
+    log_finish_time = f'Finish time   : {time_stamp(finish_time)}'
+    log_time_cost = f'Time cost     : {str((finish_time - start_time).seconds)}s'
+    log_fullfinetune = f'Full finetune : {str(args.fullfinetune)}'
+    log_focal_loss = f'Focal loss    : {str(args.fl)}'
 
     with open(log_dir + '/result.log', 'w', encoding='utf-8') as f:
         f.write(cls_report + '\n')
@@ -201,7 +200,7 @@ def save_history(model, tra_acc_list, val_acc_list, loss_list, lr_list, cls_repo
     save_log(start_time, finish_time, cls_report, cm, log_dir, classes)
 
 
-def train(backbone_ver='alexnet', spect='cqt', labelv='label', epoch_num=40, iteration=10, lr=0.001):
+def train(backbone_ver, spect, labelv, epoch_num=40, iteration=10, lr=0.001):
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tra_acc_list, val_acc_list, loss_list, lr_list = [], [], [], []
 
@@ -212,7 +211,8 @@ def train(backbone_ver='alexnet', spect='cqt', labelv='label', epoch_num=40, ite
     # init model
     model = Net(cls_num, m_ver=backbone_ver, full_finetune=args.fullfinetune)
     input_size = model._get_insize()
-    traLoader, valLoader, tesLoader = load_data(ds, input_size, spect, use_hf)
+    traLoader, valLoader, tesLoader = load_data(
+        ds, input_size, spect, use_hf, labelv)
 
     # optimizer and loss
     criterion = FocalLoss(num_samples) if args.fl else nn.CrossEntropyLoss()
