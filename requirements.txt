@@ -7,3 +7,4 @@ autopep8
 datasets
 pillow==10.0.1
 bs4
+modelscope
