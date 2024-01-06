@@ -5,14 +5,14 @@ import numpy as np
 import torch.nn as nn
 import torch.utils.data
 import torch.optim as optim
-from functools import partial
-from datetime import datetime
 from model import Net
-from datasets import load_dataset
-from modelscope.msdatasets import MsDataset
-from torch.utils.data import DataLoader
-from torchvision.transforms import *
+from datetime import datetime
+from functools import partial
 from focalLoss import FocalLoss
+from torch.utils.data import DataLoader
+from modelscope.msdatasets import MsDataset
+from torchvision.transforms import *
+from datasets import load_dataset
 from utils import time_stamp, create_dir, toCUDA, results_dir
 from plot import save_acc, save_loss, save_confusion_matrix
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
@@ -101,7 +101,7 @@ def eval_model_train(model, spect, labelv, trainLoader, tra_acc_list):
             y_pred.extend(predicted.tolist())
 
     acc = 100.0 * accuracy_score(y_true, y_pred)
-    print('Training acc   : ' + str(round(acc, 2)) + '%')
+    print(f'Training acc   : {str(round(acc, 2))}%')
     tra_acc_list.append(acc)
 
 
@@ -116,7 +116,7 @@ def eval_model_valid(model, spect, labelv, validationLoader, val_acc_list):
             y_pred.extend(predicted.tolist())
 
     acc = 100.0 * accuracy_score(y_true, y_pred)
-    print('Validation acc : ' + str(round(acc, 2)) + '%')
+    print(f'Validation acc : {str(round(acc, 2))}%')
     val_acc_list.append(acc)
 
 
@@ -131,7 +131,8 @@ def eval_model_test(model, spect, labelv, testLoader, classes):
             y_pred.extend(predicted.tolist())
 
     report = classification_report(
-        y_true, y_pred, target_names=classes, digits=3)
+        y_true, y_pred, target_names=classes, digits=3
+    )
     cm = confusion_matrix(y_true, y_pred, normalize='all')
 
     return report, cm
@@ -146,7 +147,7 @@ def save_log(start_time, finish_time, cls_report, cm, log_dir, classes):
     log_fullfinetune = f'Full finetune : {str(args.fullfinetune)}'
     log_focal_loss = f'Focal loss    : {str(args.fl)}'
 
-    with open(log_dir + '/result.log', 'w', encoding='utf-8') as f:
+    with open(f'{log_dir}/result.log', 'w', encoding='utf-8') as f:
         f.write(cls_report + '\n')
         f.write(log_backbone + '\n')
         f.write(log_spect + '\n')
@@ -158,7 +159,7 @@ def save_log(start_time, finish_time, cls_report, cm, log_dir, classes):
     f.close()
 
     # save confusion_matrix
-    np.savetxt(log_dir + '/mat.csv', cm, delimiter=',')
+    np.savetxt(f'{log_dir}/mat.csv', cm, delimiter=',')
     save_confusion_matrix(cm, classes, log_dir)
 
     print(cls_report)
@@ -179,20 +180,20 @@ def save_history(model, tra_acc_list, val_acc_list, loss_list, lr_list, cls_repo
     create_dir(log_dir)
 
     acc_len = len(tra_acc_list)
-    with open(log_dir + "/acc.csv", "w", newline='') as csvfile:
+    with open(f"{log_dir}/acc.csv", "w", newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["tra_acc_list", "val_acc_list", "lr_list"])
         for i in range(acc_len):
             writer.writerow([tra_acc_list[i], val_acc_list[i], lr_list[i]])
 
     loss_len = len(loss_list)
-    with open(log_dir + "/loss.csv", "w", newline='') as csvfile:
+    with open(f"{log_dir}/loss.csv", "w", newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["loss_list"])
         for i in range(loss_len):
             writer.writerow([loss_list[i]])
 
-    torch.save(model.state_dict(), log_dir + '/save.pt')
+    torch.save(model.state_dict(), f'{log_dir}/save.pt')
     print('Model saved.')
 
     save_acc(tra_acc_list, val_acc_list, log_dir)
@@ -212,7 +213,8 @@ def train(backbone_ver, spect, labelv, epoch_num=40, iteration=10, lr=0.001):
     model = Net(cls_num, m_ver=backbone_ver, full_finetune=args.fullfinetune)
     input_size = model._get_insize()
     traLoader, valLoader, tesLoader = load_data(
-        ds, input_size, spect, use_hf, labelv)
+        ds, input_size, spect, use_hf, labelv
+    )
 
     # optimizer and loss
     criterion = FocalLoss(num_samples) if args.fl else nn.CrossEntropyLoss()
@@ -233,7 +235,7 @@ def train(backbone_ver, spect, labelv, epoch_num=40, iteration=10, lr=0.001):
 
     # train process
     start_time = datetime.now()
-    print('Start training [' + args.model + '] at ' + time_stamp(start_time))
+    print(f'Start training [{args.model}] at {time_stamp(start_time)}')
     for epoch in range(epoch_num):  # loop over the dataset multiple times
         epoch_str = f' Epoch {epoch + 1}/{epoch_num} '
         lr_str = optimizer.param_groups[0]["lr"]
@@ -268,8 +270,10 @@ def train(backbone_ver, spect, labelv, epoch_num=40, iteration=10, lr=0.001):
 
     finish_time = datetime.now()
     cls_report, cm = eval_model_test(model, spect, labelv, tesLoader, classes)
-    save_history(model, tra_acc_list, val_acc_list, loss_list,
-                 lr_list, cls_report, cm, start_time, finish_time, classes)
+    save_history(
+        model, tra_acc_list, val_acc_list, loss_list,
+        lr_list, cls_report, cm, start_time, finish_time, classes
+    )
 
 
 if __name__ == "__main__":
