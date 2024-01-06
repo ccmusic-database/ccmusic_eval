@@ -12,9 +12,9 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-### Code download
+### Maintenance
 ```bash
-git clone -b chest-falsetto https://github.com/monet-joe/ccmusic_clstask_eval.git
+git clone -b chest-falsetto git@gitee.com:MuGeminorum/ccmusic_clstask_eval.git
 cd ccmusic_clstask_eval
 ```
 
