@@ -22,8 +22,7 @@ warnings.filterwarnings("ignore")
 
 def transform(example_batch, spect='cqt', labelv='label', input_size=300):
     compose = Compose([
-        Resize(input_size),
-        CenterCrop(input_size),
+        Resize([input_size, input_size]),
         RandomAffine(5),
         ToTensor(),
         Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
