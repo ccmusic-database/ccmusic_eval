@@ -1,18 +1,11 @@
-import os
 import time
 import torch
 import zipfile
 import requests
 from tqdm import tqdm
 
-# data_dir = './data'
-results_dir = './logs'
+results_dir = './logs/chest-falsetto'
 model_dir = './model'
-
-
-def create_dir(dir):
-    if not os.path.exists(dir):
-        os.mkdir(dir)
 
 
 def url_download(url: str, fname: str, max_retries=3):
@@ -24,7 +17,6 @@ def url_download(url: str, fname: str, max_retries=3):
             # Check the response status code (raise an exception if it's not in the range 200-299)
             resp.raise_for_status()
             total = int(resp.headers.get('content-length', 0))
-            # create_dir(data_dir)
             with open(fname, 'wb') as file, tqdm(
                     desc=fname,
                     total=total,
@@ -57,7 +49,8 @@ def url_download(url: str, fname: str, max_retries=3):
 
     else:
         print(
-            "Error: the operation could not be completed after {max_retries} retries.")
+            f"Error: the operation could not be completed after {max_retries} retries."
+        )
         exit()
 
 

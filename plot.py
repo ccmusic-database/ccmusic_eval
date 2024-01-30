@@ -1,10 +1,8 @@
 import os
-# import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import signal as ss
-# from datasets import load_dataset
 from utils import *
 
 plt.rcParams['font.sans-serif'] = 'Times New Roman'
@@ -124,8 +122,7 @@ def valid_path(log_path, latest_log):
 
 
 def load_history(log_dir=results_dir, latest_log=''):
-
-    create_dir(log_dir)
+    os.makedirs(log_dir, exist_ok=True)
 
     if len(os.listdir(log_dir)) == 0:
         print('Please finish training first.')
@@ -143,8 +140,11 @@ def load_history(log_dir=results_dir, latest_log=''):
     val_acc_list = acc_list['val_acc_list'].tolist()
     loss_list = pd.read_csv(latest_loss)['loss_list'].tolist()
 
-    cm = np.loadtxt(open(log_dir + latest_log + "/mat.csv", "rb"),
-                    delimiter=",", skiprows=0)
+    cm = np.loadtxt(
+        open(log_dir + latest_log + "/mat.csv", "rb"),
+        delimiter=",",
+        skiprows=0
+    )
 
     return tra_acc_list, val_acc_list, loss_list, cm
 
@@ -185,7 +185,8 @@ def save_confusion_matrix(cm, labels_name, save_path, title='Confusion matrix'):
 
 def plot_all(labels_name, latest_log=''):
     tra_acc_list, val_acc_list, loss_list, cm = load_history(
-        latest_log=latest_log)
+        latest_log=latest_log
+    )
 
     plt.figure(figsize=(9, 7))
     plt.subplot(221)
@@ -204,12 +205,16 @@ def save_all(labels_name, latest_log=''):
         latest_log = latest_log[1:]
 
     tra_acc_list, val_acc_list, loss_list, cm = load_history(
-        latest_log=latest_log)
+        latest_log=latest_log
+    )
 
     save_acc(tra_acc_list, val_acc_list, results_dir + '/' + latest_log)
     save_loss(loss_list, results_dir + '/' + latest_log)
     save_confusion_matrix(
-        cm, labels_name, save_path=results_dir + '/' + latest_log)
+        cm,
+        labels_name,
+        save_path=results_dir + '/' + latest_log
+    )
     print('Re-saved.')
 
 

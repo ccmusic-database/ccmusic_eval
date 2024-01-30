@@ -4,7 +4,7 @@ import torch.nn as nn
 import torchvision.models as models
 from modelscope.msdatasets import MsDataset
 from datasets import load_dataset
-from utils import url_download, create_dir, model_dir
+from utils import url_download, model_dir
 
 
 def get_backbone(ver, backbone_list):
@@ -39,7 +39,7 @@ def model_info(backbone_ver):
 
 def download_model(pre_model_url):
     pre_model_path = model_dir + '/' + (pre_model_url.split('/')[-1])
-    create_dir(model_dir)
+    os.makedirs(model_dir, exist_ok=True)
 
     if not os.path.exists(pre_model_path):
         url_download(pre_model_url, pre_model_path)

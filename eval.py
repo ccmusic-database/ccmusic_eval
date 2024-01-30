@@ -2,7 +2,6 @@ import os
 import wave
 import torch
 import librosa
-import argparse
 import contextlib
 import librosa.display
 import numpy as np
@@ -11,9 +10,8 @@ import torchvision.transforms as transforms
 from PIL import Image
 from model import Net
 from train import train
-from datasets import load_dataset
 from plot import get_latest_log, valid_path
-from utils import time_stamp, create_dir, results_dir
+from utils import time_stamp, results_dir
 
 
 def get_duration_wav(audio_path):
@@ -44,7 +42,7 @@ def split_embed(audio_path, input_size, width=1.0, step=0.2):
     start = 0  # (dur - width) * 0.5
     end = dur - width + step  # (dur + width) * 0.5
     inputs = []
-    create_dir(cache_dir)
+    os.makedirs(cache_dir, exist_ok=True)
     for i in np.arange(start, end, step):
         index = round(i, 1)
         outpath = cache_dir + '/' + str(index) + '.png'

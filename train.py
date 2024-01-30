@@ -1,4 +1,5 @@
 import csv
+import os
 import torch
 import argparse
 import numpy as np
@@ -13,7 +14,7 @@ from torch.utils.data import DataLoader
 from modelscope.msdatasets import MsDataset
 from torchvision.transforms import *
 from datasets import load_dataset
-from utils import time_stamp, create_dir, toCUDA, results_dir
+from utils import time_stamp, toCUDA, results_dir
 from plot import save_acc, save_loss, save_confusion_matrix
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 import warnings
@@ -37,16 +38,19 @@ def transform(example_batch, spect='cqt', labelv='label', input_size=300):
     return example_batch
 
 
-def prepare_data(labelv):
+def prepare_data(labelv, use_hf=True):
     print('Preparing data...')
     try:
-        ds = load_dataset("ccmusic-database/chest_falsetto")
-        classes = ds['test'].features[labelv].names
-        use_hf = True
+        if use_hf:
+            ds = load_dataset("ccmusic-database/chest_falsetto")
+            classes = ds['test'].features[labelv].names
+
     except ConnectionError:
+        use_hf = False
+
+    if not use_hf:
         ds = MsDataset.load('ccmusic/chest_falsetto', subset_name='default')
         classes = ds['test']._hf_ds.features[labelv].names
-        use_hf = False
 
     if args.fl:
         num_samples_in_each_category = {k: 0 for k in classes}
@@ -174,9 +178,8 @@ def save_log(start_time, finish_time, cls_report, cm, log_dir, classes):
 
 
 def save_history(model, tra_acc_list, val_acc_list, loss_list, lr_list, cls_report, cm, start_time, finish_time, classes):
-    create_dir(results_dir)
     log_dir = f'{results_dir}/{args.model}_{args.spect}_{time_stamp()}'
-    create_dir(log_dir)
+    os.makedirs(log_dir, exist_ok=True)
 
     acc_len = len(tra_acc_list)
     with open(f"{log_dir}/acc.csv", "w", newline='') as csvfile:
@@ -205,7 +208,7 @@ def train(backbone_ver, spect, labelv, epoch_num=40, iteration=10, lr=0.001):
     tra_acc_list, val_acc_list, loss_list, lr_list = [], [], [], []
 
     # load data
-    ds, classes, num_samples, use_hf = prepare_data(labelv)
+    ds, classes, num_samples, use_hf = prepare_data(labelv, False)
     cls_num = len(classes)
 
     # init model
