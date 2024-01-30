@@ -65,31 +65,66 @@ def prepare_data(labelv, use_hf=True):
         return ds, classes, [], use_hf
 
 
-def load_data(ds, input_size, spect, use_hf, labelv, batch_size=4, shuffle=True, num_workers=2):
+def load_data(ds, input_size, spect, use_hf, labelv, has_bn=False, batch_size=4, shuffle=True, num_workers=2):
     print('Loadeding data...')
-    if use_hf:
-        trainset = ds['train'].with_transform(
-            partial(transform, spect=spect, input_size=input_size, labelv=labelv))
-        validset = ds['validation'].with_transform(
-            partial(transform, spect=spect, input_size=input_size, labelv=labelv))
-        testset = ds['test'].with_transform(
-            partial(transform, spect=spect, input_size=input_size, labelv=labelv))
-    else:
-        trainset = ds['train']._hf_ds.with_transform(
-            partial(transform, spect=spect, input_size=input_size, labelv=labelv))
-        validset = ds['validation']._hf_ds.with_transform(
-            partial(transform, spect=spect, input_size=input_size, labelv=labelv))
-        testset = ds['test']._hf_ds.with_transform(
-            partial(transform, spect=spect, input_size=input_size, labelv=labelv))
+    bs = batch_size
+    ds_train = ds['train']
+    ds_valid = ds['validation']
+    ds_test = ds['test']
 
-    traLoader = DataLoader(trainset, batch_size=batch_size,
-                           shuffle=shuffle, num_workers=num_workers)
-    valLoader = DataLoader(validset, batch_size=batch_size,
-                           shuffle=shuffle, num_workers=num_workers)
-    tesLoader = DataLoader(testset, batch_size=batch_size,
-                           shuffle=shuffle, num_workers=num_workers)
+    if not use_hf:
+        ds_train = ds_train._hf_ds
+        ds_valid = ds_valid._hf_ds
+        ds_test = ds_test._hf_ds
 
+    if has_bn:
+        print('The model has bn layer')
+        if bs < 2:
+            print('Switch batch_size >= 2')
+            bs = 2
+
+    trainset = ds_train.with_transform(partial(
+        transform,
+        spect=spect,
+        input_size=input_size,
+        labelv=labelv
+    ))
+    validset = ds_valid.with_transform(partial(
+        transform,
+        spect=spect,
+        input_size=input_size,
+        labelv=labelv
+    ))
+    testset = ds_test.with_transform(partial(
+        transform,
+        spect=spect,
+        input_size=input_size,
+        labelv=labelv
+    ))
+
+    traLoader = DataLoader(
+        trainset,
+        batch_size=bs,
+        shuffle=shuffle,
+        num_workers=num_workers,
+        drop_last=has_bn
+    )
+    valLoader = DataLoader(
+        validset,
+        batch_size=bs,
+        shuffle=shuffle,
+        num_workers=num_workers,
+        drop_last=has_bn
+    )
+    tesLoader = DataLoader(
+        testset,
+        batch_size=bs,
+        shuffle=shuffle,
+        num_workers=num_workers,
+        drop_last=has_bn
+    )
     print('Data loaded.')
+
     return traLoader, valLoader, tesLoader
 
 
@@ -215,7 +250,12 @@ def train(backbone_ver, spect, labelv, epoch_num=40, iteration=10, lr=0.001):
     model = Net(cls_num, m_ver=backbone_ver, full_finetune=args.fullfinetune)
     input_size = model._get_insize()
     traLoader, valLoader, tesLoader = load_data(
-        ds, input_size, spect, use_hf, labelv
+        ds,
+        input_size,
+        spect,
+        use_hf,
+        labelv,
+        has_bn=str(model.model).find('BatchNorm') > 0
     )
 
     # optimizer and loss
