@@ -97,8 +97,11 @@ def eval(classes, tag='', log_dir=results_dir, history='', split_mode=False):
         exit()
 
     saved_model_path, m_ver = get_saved_model(log_dir, history)
-    model = Net(cls_num=cls_num, m_ver=m_ver,
-                saved_model_path=saved_model_path)
+    model = Net(
+        cls_num=cls_num,
+        m_ver=m_ver,
+        saved_model_path=saved_model_path
+    )
     print(f'prediction result of [{tag}] on [{m_ver}]:')
 
     if split_mode:

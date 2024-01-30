@@ -10,8 +10,12 @@ plt.rcParams['font.sans-serif'] = 'Times New Roman'
 
 def show_point(max_id, list):
     show_max = '(' + str(max_id + 1) + ', ' + str(round(list[max_id], 2)) + ')'
-    plt.annotate(show_max, xytext=(
-        max_id + 1, list[max_id]), xy=(max_id + 1, list[max_id]), fontsize=6)
+    plt.annotate(
+        show_max,
+        xytext=(max_id + 1, list[max_id]),
+        xy=(max_id + 1, list[max_id]),
+        fontsize=6
+    )
 
 
 def smooth(y):

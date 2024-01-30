@@ -134,14 +134,16 @@ class Net():
                     self.output_size = module.in_features
                     if debug_mode:
                         print(
-                            f"{name}(Linear): {self.output_size} -> {module.out_features}")
+                            f"{name}(Linear): {self.output_size} -> {module.out_features}"
+                        )
                     return True
 
                 if isinstance(module, torch.nn.Conv2d):
                     self.output_size = module.in_channels
                     if debug_mode:
                         print(
-                            f"{name}(Conv2d): {self.output_size} -> {module.out_channels}")
+                            f"{name}(Conv2d): {self.output_size} -> {module.out_channels}"
+                        )
                     return False
 
         return False
@@ -149,21 +151,25 @@ class Net():
     def _set_classifier(self, cls_num, linear_output):
         if hasattr(self.model, 'classifier'):
             self.model.classifier = Classifier(
-                cls_num, self.output_size, linear_output)
+                cls_num, self.output_size, linear_output
+            )
             return
 
         elif hasattr(self.model, 'fc'):
             self.model.fc = Classifier(
-                cls_num, self.output_size, linear_output)
+                cls_num, self.output_size, linear_output
+            )
             return
 
         elif hasattr(self.model, 'head'):
             self.model.head = Classifier(
-                cls_num, self.output_size, linear_output)
+                cls_num, self.output_size, linear_output
+            )
             return
 
         self.model.heads.head = Classifier(
-            cls_num, self.output_size, linear_output)
+            cls_num, self.output_size, linear_output
+        )
 
     def _get_insize(self):
         return self.input_size
