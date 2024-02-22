@@ -201,17 +201,17 @@ def save_log(
     full_finetune: bool,
 ):
     log = f"""
+Class num     : {len(classes)}
 Backbone      : {backbone}
 Data column   : {data_col}
 Start time    : {time_stamp(start_time)}
 Finish time   : {time_stamp(finish_time)}
 Time cost     : {str((finish_time - start_time).seconds)}s
 Full finetune : {str(full_finetune)}
-Focal loss    : {focal_loss}
-    """
+Focal loss    : {focal_loss}"""
 
     with open(f"{log_dir}/result.log", "w", encoding="utf-8") as f:
-        f.write(f"{log}\n")
+        f.write(cls_report + log)
     f.close()
 
     # save confusion_matrix
@@ -238,7 +238,7 @@ def save_history(
     full_finetune: bool,
 ):
     results_dir = f"./logs/{dataset.replace('/', '_')}"
-    log_dir = f"{results_dir}/{backbone}_{data_col}_{time_stamp()}"
+    log_dir = f"{results_dir}/{backbone}_{data_col}_{len(classes)}cls_{time_stamp()}"
     os.makedirs(log_dir, exist_ok=True)
 
     acc_len = len(tra_acc_list)
