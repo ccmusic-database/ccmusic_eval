@@ -1,8 +1,8 @@
 import os
 import csv
 import torch
-import warnings
 import argparse
+import warnings
 import torch.utils.data
 import numpy as np
 import torch.nn as nn
@@ -391,7 +391,7 @@ if __name__ == "__main__":
     parser.add_argument("--subset", type=str, default="default")
     parser.add_argument("--data", type=str, default="cqt")
     parser.add_argument("--label", type=str, default="label")
-    parser.add_argument("--backbone", type=str, default="squeezenet1_1")
+    parser.add_argument("--backbone", type=str, default="convnext_tiny")
     parser.add_argument("--focalloss", type=bool, default=True)
     parser.add_argument("--fullfinetune", type=bool, default=True)
     args = parser.parse_args()

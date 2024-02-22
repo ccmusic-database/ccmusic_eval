@@ -80,9 +80,8 @@ class Net:
         l1 = int(q * cls_num)
         l2 = int(q * l1)
         l3 = int(q * l2)
-
         if linear_output:
-            return torch.nn.Sequential(
+            return nn.Sequential(
                 nn.Dropout(),
                 nn.Linear(self.output_size, l3),
                 nn.ReLU(inplace=True),
@@ -94,9 +93,8 @@ class Net:
                 nn.ReLU(inplace=True),
                 nn.Linear(l1, cls_num),
             )
-
         else:
-            return torch.nn.Sequential(
+            return nn.Sequential(
                 nn.Dropout(),
                 nn.Conv2d(self.output_size, l3, kernel_size=(1, 1), stride=(1, 1)),
                 nn.ReLU(inplace=True),
@@ -136,7 +134,15 @@ class Net:
         return False
 
     def _set_classifier(self, cls_num, linear_output):
-        if hasattr(self.model, "classifier"):
+        if self.type == "convnext":
+            del self.model.classifier[2]
+            self.model.classifier = nn.Sequential(
+                *list(self.model.classifier)
+                + list(self._create_classifier(cls_num, linear_output))
+            )
+            self.classifier = self.model.classifier
+
+        elif hasattr(self.model, "classifier"):
             self.model.classifier = self._create_classifier(cls_num, linear_output)
             self.classifier = self.model.classifier
 
