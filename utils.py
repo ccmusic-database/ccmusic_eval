@@ -4,9 +4,6 @@ import zipfile
 import requests
 from tqdm import tqdm
 
-results_dir = './logs/chest-falsetto'
-model_dir = './model'
-
 
 def url_download(url: str, fname: str, max_retries=3):
     retry_count = 0
@@ -16,18 +13,18 @@ def url_download(url: str, fname: str, max_retries=3):
             resp = requests.get(url, stream=True)
             # Check the response status code (raise an exception if it's not in the range 200-299)
             resp.raise_for_status()
-            total = int(resp.headers.get('content-length', 0))
-            with open(fname, 'wb') as file, tqdm(
-                    desc=fname,
-                    total=total,
-                    unit='iB',
-                    unit_scale=True,
-                    unit_divisor=1024,
+            total = int(resp.headers.get("content-length", 0))
+            with open(fname, "wb") as file, tqdm(
+                desc=fname,
+                total=total,
+                unit="iB",
+                unit_scale=True,
+                unit_divisor=1024,
             ) as bar:
                 for data in resp.iter_content(chunk_size=1024):
                     size = file.write(data)
                     bar.update(size)
-            print(f'Download of {url} completed.')
+            print(f"Download of {url} completed.")
             return
 
         except requests.exceptions.HTTPError as errh:
@@ -57,11 +54,11 @@ def url_download(url: str, fname: str, max_retries=3):
 def unzip_file(zip_src, dst_dir):
     r = zipfile.is_zipfile(zip_src)
     if r:
-        fz = zipfile.ZipFile(zip_src, 'r')
+        fz = zipfile.ZipFile(zip_src, "r")
         for file in fz.namelist():
             fz.extract(file, dst_dir)
     else:
-        print('This is not zip')
+        print("This is not zip")
 
 
 def time_stamp(timestamp=None):
@@ -71,8 +68,8 @@ def time_stamp(timestamp=None):
     return time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime(time.time()))
 
 
-def toCUDA(x):
-    if hasattr(x, 'cuda'):
+def to_cuda(x):
+    if hasattr(x, "cuda"):
         if torch.cuda.is_available():
             return x.cuda()
 

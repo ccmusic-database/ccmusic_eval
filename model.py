@@ -3,115 +3,32 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 from modelscope.msdatasets import MsDataset
-from datasets import load_dataset
-from utils import url_download, model_dir
+from utils import url_download
 
 
-def get_backbone(ver, backbone_list):
-    for bb in backbone_list:
-        if ver == bb['ver']:
-            return bb
-
-    print('Backbone name not found, using default option - alexnet.')
-    return backbone_list[0]
-
-
-def model_info(backbone_ver):
-    try:
-        backbone_list = load_dataset(
-            path="monet-joe/cv_backbones",
-            split="IMAGENET1K_V1"
-        )
-    except ConnectionError:
-        backbone_list = MsDataset.load(
-            'monetjoe/cv_backbones',
-            subset_name='ImageNet1k_v1',
-            split='train'
-        )
-
-    backbone = get_backbone(backbone_ver, backbone_list)
-    m_type = str(backbone['type'])
-    input_size = int(backbone['input_size'])
-    m_url = str(backbone['url'])
-
-    return m_type, input_size, m_url
-
-
-def download_model(pre_model_url):
-    pre_model_path = model_dir + '/' + (pre_model_url.split('/')[-1])
-    os.makedirs(model_dir, exist_ok=True)
-
-    if not os.path.exists(pre_model_path):
-        url_download(pre_model_url, pre_model_path)
-
-    return pre_model_path
-
-
-def Classifier(cls_num: int, output_size: int, linear_output: bool):
-    q = (1.0 * output_size / cls_num) ** 0.25
-    l1 = int(q * cls_num)
-    l2 = int(q * l1)
-    l3 = int(q * l2)
-
-    if linear_output:
-        return torch.nn.Sequential(
-            nn.Dropout(),
-            nn.Linear(output_size, l3),
-            nn.ReLU(inplace=True),
-            nn.Dropout(),
-            nn.Linear(l3, l2),
-            nn.ReLU(inplace=True),
-            nn.Dropout(),
-            nn.Linear(l2, l1),
-            nn.ReLU(inplace=True),
-            nn.Linear(l1, cls_num)
-        )
-
-    else:
-        return torch.nn.Sequential(
-            nn.Dropout(),
-            nn.Conv2d(output_size, l3, kernel_size=(1, 1), stride=(1, 1)),
-            nn.ReLU(inplace=True),
-            nn.AdaptiveAvgPool2d(output_size=(1, 1)),
-            nn.Flatten(),
-            nn.Linear(l3, l2),
-            nn.ReLU(inplace=True),
-            nn.Dropout(),
-            nn.Linear(l2, l1),
-            nn.ReLU(inplace=True),
-            nn.Linear(l1, cls_num)
-        )
-
-
-class Net():
-    model = None
-    m_type = 'alexnet'
-    m_url = 'https://download.pytorch.org/models/alexnet-owt-7be5be79.pth'
-    input_size = 224
-    output_size = 512
-    training = True
-    full_finetune = False
-
-    def __init__(self, cls_num, m_ver='alexnet', saved_model_path='', full_finetune=False):
-        self.training = (saved_model_path == '')
-        self.full_finetune = full_finetune
-        self.m_type, self.input_size, self.m_url = model_info(m_ver)
-
-        if not hasattr(models, m_ver):
-            print('Unsupported model.')
+class Net:
+    def __init__(
+        self, backbone: str, cls_num: int, full_finetune: bool, weight_path=""
+    ):
+        if not hasattr(models, backbone):
+            print("Unsupported model.")
             exit()
 
-        self.model = eval('models.%s()' % m_ver)
+        self.output_size = 512
+        self.training = weight_path == ""
+        self.full_finetune = full_finetune
+        self.type, self.weight_url, self.input_size = self._model_info(backbone)
+        self.model = eval("models.%s()" % backbone)
         linear_output = self._set_outsize()
 
         if self.training:
-            pre_model_path = download_model(self.m_url)
-            checkpoint = torch.load(pre_model_path, map_location='cpu')
-            if torch.cuda.is_available():
-                checkpoint = torch.load(pre_model_path)
-
+            weight_path = self._download_model(self.weight_url)
+            checkpoint = (
+                torch.load(weight_path)
+                if torch.cuda.is_available()
+                else torch.load(weight_path, map_location="cpu")
+            )
             self.model.load_state_dict(checkpoint, False)
-
             for parma in self.model.parameters():
                 parma.requires_grad = self.full_finetune
 
@@ -120,16 +37,86 @@ class Net():
 
         else:
             self._set_classifier(cls_num, linear_output)
-            checkpoint = torch.load(saved_model_path, map_location='cpu')
-            if torch.cuda.is_available():
-                checkpoint = torch.load(saved_model_path)
-
+            checkpoint = (
+                torch.load(weight_path)
+                if torch.cuda.is_available()
+                else torch.load(weight_path, map_location="cpu")
+            )
             self.model.load_state_dict(checkpoint, False)
             self.model.eval()
 
+    def _get_backbone(self, backbone_ver, backbone_list):
+        for backbone_info in backbone_list:
+            if backbone_ver == backbone_info["ver"]:
+                return backbone_info
+
+        print("Backbone name not found, using default option - alexnet.")
+        return backbone_list[0]
+
+    def _model_info(self, backbone):
+        backbone_list = MsDataset.load(
+            "monetjoe/cv_backbones", subset_name="ImageNet1k_v1", split="train"
+        )
+        backbone_info = self._get_backbone(backbone, backbone_list)
+
+        return (
+            str(backbone_info["type"]),
+            str(backbone_info["url"]),
+            int(backbone_info["input_size"]),
+        )
+
+    def _download_model(self, weight_url):
+        model_dir = "./model"
+        weight_path = f'{model_dir}/{weight_url.split("/")[-1]}'
+        os.makedirs(model_dir, exist_ok=True)
+
+        if not os.path.exists(weight_path):
+            url_download(weight_url, weight_path)
+
+        return weight_path
+
+    def _create_classifier(self, cls_num: int, linear_output: bool):
+        q = (1.0 * self.output_size / cls_num) ** 0.25
+        l1 = int(q * cls_num)
+        l2 = int(q * l1)
+        l3 = int(q * l2)
+
+        if linear_output:
+            return torch.nn.Sequential(
+                nn.Dropout(),
+                nn.Linear(self.output_size, l3),
+                nn.ReLU(inplace=True),
+                nn.Dropout(),
+                nn.Linear(l3, l2),
+                nn.ReLU(inplace=True),
+                nn.Dropout(),
+                nn.Linear(l2, l1),
+                nn.ReLU(inplace=True),
+                nn.Linear(l1, cls_num),
+            )
+
+        else:
+            return torch.nn.Sequential(
+                nn.Dropout(),
+                nn.Conv2d(self.output_size, l3, kernel_size=(1, 1), stride=(1, 1)),
+                nn.ReLU(inplace=True),
+                nn.AdaptiveAvgPool2d(output_size=(1, 1)),
+                nn.Flatten(),
+                nn.Linear(l3, l2),
+                nn.ReLU(inplace=True),
+                nn.Dropout(),
+                nn.Linear(l2, l1),
+                nn.ReLU(inplace=True),
+                nn.Linear(l1, cls_num),
+            )
+
     def _set_outsize(self, debug_mode=False):
         for name, module in self.model.named_modules():
-            if str(name).__contains__('classifier') or str(name).__eq__('fc') or str(name).__contains__('head'):
+            if (
+                str(name).__contains__("classifier")
+                or str(name).__eq__("fc")
+                or str(name).__contains__("head")
+            ):
                 if isinstance(module, torch.nn.Linear):
                     self.output_size = module.in_features
                     if debug_mode:
@@ -149,29 +136,26 @@ class Net():
         return False
 
     def _set_classifier(self, cls_num, linear_output):
-        if hasattr(self.model, 'classifier'):
-            self.model.classifier = Classifier(
-                cls_num, self.output_size, linear_output
-            )
-            return
+        if hasattr(self.model, "classifier"):
+            self.model.classifier = self._create_classifier(cls_num, linear_output)
+            self.classifier = self.model.classifier
 
-        elif hasattr(self.model, 'fc'):
-            self.model.fc = Classifier(
-                cls_num, self.output_size, linear_output
-            )
-            return
+        elif hasattr(self.model, "fc"):
+            self.model.fc = self._create_classifier(cls_num, linear_output)
+            self.classifier = self.model.fc
 
-        elif hasattr(self.model, 'head'):
-            self.model.head = Classifier(
-                cls_num, self.output_size, linear_output
-            )
-            return
+        elif hasattr(self.model, "head"):
+            self.model.head = self._create_classifier(cls_num, linear_output)
+            self.classifier = self.model.head
 
-        self.model.heads.head = Classifier(
-            cls_num, self.output_size, linear_output
-        )
+        else:
+            self.model.heads.head = self._create_classifier(cls_num, linear_output)
+            self.classifier = self.model.heads.head
 
-    def _get_insize(self):
+        for parma in self.classifier.parameters():
+            parma.requires_grad = True
+
+    def get_input_size(self):
         return self.input_size
 
     def forward(self, x):
@@ -179,7 +163,8 @@ class Net():
             x = x.cuda()
             self.model = self.model.cuda()
 
-        if self.m_type == 'googlenet' and self.training:
+        # TODO: convnext not support yet
+        if self.type == "googlenet" and self.training:
             return self.model(x)[0]
         else:
             return self.model(x)
@@ -187,15 +172,8 @@ class Net():
     def parameters(self):
         if self.full_finetune:
             return self.model.parameters()
-
-        if hasattr(self.model, 'classifier'):
-            return self.model.classifier.parameters()
-
-        if hasattr(self.model, 'fc'):
-            return self.model.fc.parameters()
-
-        print('Classifier part not found.')
-        return self.model.parameters()
+        else:
+            return self.classifier.parameters()
 
     def state_dict(self):
         return self.model.state_dict()
