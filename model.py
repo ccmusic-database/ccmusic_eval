@@ -8,7 +8,12 @@ from utils import url_download
 
 class Net:
     def __init__(
-        self, backbone: str, cls_num: int, full_finetune: bool, weight_path=""
+        self,
+        backbone: str,
+        pretrain: str,
+        cls_num: int,
+        full_finetune: bool,
+        weight_path="",
     ):
         if not hasattr(models, backbone):
             print("Unsupported model.")
@@ -17,7 +22,9 @@ class Net:
         self.output_size = 512
         self.training = weight_path == ""
         self.full_finetune = full_finetune
-        self.type, self.weight_url, self.input_size = self._model_info(backbone)
+        self.type, self.weight_url, self.input_size = self._model_info(
+            backbone, pretrain
+        )
         self.model = eval("models.%s()" % backbone)
         linear_output = self._set_outsize()
 
@@ -50,12 +57,12 @@ class Net:
             if backbone_ver == backbone_info["ver"]:
                 return backbone_info
 
-        print("Backbone name not found, using default option - alexnet.")
-        return backbone_list[0]
+        print("[Backbone not found] Check if --backbone & --pretrain are correct!")
+        exit()
 
-    def _model_info(self, backbone):
+    def _model_info(self, backbone, pretrain):
         backbone_list = MsDataset.load(
-            "monetjoe/cv_backbones", subset_name="ImageNet1k_v1", split="train"
+            "monetjoe/cv_backbones", subset_name=pretrain, split="train"
         )
         backbone_info = self._get_backbone(backbone, backbone_list)
 
@@ -169,7 +176,6 @@ class Net:
             x = x.cuda()
             self.model = self.model.cuda()
 
-        # TODO: convnext not support yet
         if self.type == "googlenet" and self.training:
             return self.model(x)[0]
         else:

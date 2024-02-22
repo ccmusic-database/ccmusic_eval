@@ -27,7 +27,7 @@ python train.py --model squeezenet1_1 --fullfinetune True
 
 <a href="https://www.modelscope.cn/datasets/monetjoe/cv_backbones/dataPeview" target="_blank">Supported backbones</a> 
 
-### Plot results
+<!-- ### Plot results
 After finishing the training, use below command to plot latest results:
 ```bash
 python plot.py
@@ -37,7 +37,7 @@ python plot.py
 Use below command to predict an audio target by latest saved model:
 ```bash
 python eval.py --target ./test/example.wav
-```
+``` -->
 
 ## Cite
 ```bash

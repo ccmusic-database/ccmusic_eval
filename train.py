@@ -279,6 +279,7 @@ def train(
     data_col: str,
     label_col: str,
     backbone: str,
+    pretrain: str,
     focal_loss: bool,
     full_finetune: bool,
     epoch_num=40,
@@ -289,7 +290,7 @@ def train(
     ds, classes, num_samples = prepare_data(dataset, subset, label_col, focal_loss)
 
     # init model
-    model = Net(backbone, len(classes), full_finetune)
+    model = Net(backbone, pretrain, len(classes), full_finetune)
 
     # load data
     traLoader, valLoader, tesLoader = load_data(
@@ -325,7 +326,7 @@ def train(
                 if isinstance(v, torch.Tensor):
                     state[k] = v.cuda()
 
-    # train process
+    # train
     start_time = datetime.now()
     print(f"Start training [{backbone}] at {time_stamp(start_time)} ...")
     tra_acc_list, val_acc_list, loss_list, lr_list = [], [], [], []
@@ -391,7 +392,8 @@ if __name__ == "__main__":
     parser.add_argument("--subset", type=str, default="default")
     parser.add_argument("--data", type=str, default="cqt")
     parser.add_argument("--label", type=str, default="label")
-    parser.add_argument("--backbone", type=str, default="convnext_tiny")
+    parser.add_argument("--backbone", type=str, default="squeezenet1_1")
+    parser.add_argument("--pretrain", type=str, default="ImageNet1k_v1")
     parser.add_argument("--focalloss", type=bool, default=True)
     parser.add_argument("--fullfinetune", type=bool, default=True)
     args = parser.parse_args()
@@ -402,6 +404,7 @@ if __name__ == "__main__":
         data_col=args.data,
         label_col=args.label,
         backbone=args.backbone,
+        pretrain=args.pretrain,
         focal_loss=args.focalloss,
         full_finetune=args.fullfinetune,
     )
