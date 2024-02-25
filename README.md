@@ -21,7 +21,7 @@ pip install -r requirements.txt
 <https://www.modelscope.cn/datasets/monetjoe/cv_backbones/dataPeview>  
 
 ## Cite
-```bash
+```
 @dataset{zhaorui_liu_2021_5676893,
   author       = {Monan Zhou, Shenyang Xu, Zhaorui Liu, Zhaowen Wang, Feng Yu, Wei Li and Zijin Li},
   title        = {CCMusic: General Database for Computational Musicology and Chinese Music Technology Research},
