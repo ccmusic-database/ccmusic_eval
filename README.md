@@ -1,49 +1,30 @@
-# Bel-Folk-Classification
-[![Python application](https://github.com/monet-joe/ccmusic_clstask_eval/actions/workflows/python-app.yml/badge.svg?branch=genre)](https://github.com/monet-joe/ccmusic_clstask_eval/actions/workflows/python-app.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/monet-joe/ccmusic_clstask_eval/blob/genre/LICENSE)
+# Evaluation Framework for CCMusic Database Classification Tasks
+[![Python application](https://github.com/monet-joe/ccmusic_clstask_eval/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/monet-joe/ccmusic_clstask_eval/actions/workflows/python-app.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/monet-joe/ccmusic_clstask_eval/blob/main/LICENSE)
 
-Classify singing method by fine-tuned pre-trained CNN models.
+Classify spectrograms by fine-tuned pre-trained CNN models.
 
-## Requirements
+## Maintenance
 ```bash
-conda create -n cnn --yes --file conda.txt
-conda activate cnn
-pip install -r requirements.txt
-```
-
-## Usage
-### Maintenance
-```bash
-git clone -b chest-falsetto git@gitee.com:MuGeminorum/ccmusic_clstask_eval.git
+git clone git@gitee.com:MuGeminorum/ccmusic_clstask_eval.git
 cd ccmusic_clstask_eval
 ```
 
-### Train
-Assign a backbone(take squeezenet1_1 as an example) after `--model` to start training:
+## Requirements
 ```bash
-python train.py --model squeezenet1_1 --fullfinetune True
-```
-`--fullfinetune True` means full finetune, `False` means linear probing
-
-<a href="https://www.modelscope.cn/datasets/monetjoe/cv_backbones/dataPeview" target="_blank">Supported backbones</a> 
-
-<!-- ### Plot results
-After finishing the training, use below command to plot latest results:
-```bash
-python plot.py
+conda create -n cv --yes --file conda.txt
+conda activate cv
+pip install -r requirements.txt
 ```
 
-### Predict
-Use below command to predict an audio target by latest saved model:
-```bash
-python eval.py --target ./test/example.wav
-``` -->
+## Supported backbones
+<https://www.modelscope.cn/datasets/monetjoe/cv_backbones/dataPeview>  
 
 ## Cite
 ```bash
 @dataset{zhaorui_liu_2021_5676893,
-  author       = {Zhaorui Liu, Monan Zhou, Shenyang Xu, Zhaowen Wang, Wei Li and Zijin Li},
-  title        = {CCMUSIC DATABASE: A Music Data Sharing Platform for Computational Musicology Research},
+  author       = {Monan Zhou, Shenyang Xu, Zhaorui Liu, Zhaowen Wang, Feng Yu, Wei Li and Zijin Li},
+  title        = {CCMusic: General Database for Computational Musicology and Chinese Music Technology Research},
   month        = {nov},
   year         = {2021},
   publisher    = {Zenodo},
