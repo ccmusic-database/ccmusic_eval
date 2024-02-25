@@ -4,9 +4,9 @@
 
 Classify spectrograms by fine-tuned pre-trained CNN models.
 
-## Maintenance
+## Download
 ```bash
-git clone git@gitee.com:MuGeminorum/ccmusic_clstask_eval.git
+git clone git@github.com:monet-joe/ccmusic_clstask_eval.git
 cd ccmusic_clstask_eval
 ```
 
