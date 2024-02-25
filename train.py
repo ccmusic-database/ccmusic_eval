@@ -196,6 +196,7 @@ def save_log(
     cls_report: str,
     log_dir: str,
     backbone: str,
+    pretrain: str,
     data_col: str,
     focal_loss: str,
     full_finetune: bool,
@@ -203,6 +204,7 @@ def save_log(
     log = f"""
 Class num     : {len(classes)}
 Backbone      : {backbone}
+Pretrain src  : {pretrain}
 Data column   : {data_col}
 Start time    : {time_stamp(start_time)}
 Finish time   : {time_stamp(finish_time)}
@@ -234,6 +236,7 @@ def save_history(
     dataset: str,
     data_col: str,
     backbone: str,
+    pretrain: str,
     focal_loss: str,
     full_finetune: bool,
 ):
@@ -267,6 +270,7 @@ def save_history(
         cls_report,
         log_dir,
         backbone,
+        pretrain,
         data_col,
         focal_loss,
         full_finetune,
@@ -380,6 +384,7 @@ def train(
         dataset,
         data_col,
         backbone,
+        pretrain,
         focal_loss,
         full_finetune,
     )
@@ -395,11 +400,11 @@ if __name__ == "__main__":
     parser.add_argument("--backbone", type=str, default="squeezenet1_1")
     parser.add_argument("--pretrain", type=str, default="ImageNet1k_v1")
     parser.add_argument("--focalloss", type=bool, default=True)
-    parser.add_argument("--fullfinetune", type=bool, default=True)
+    parser.add_argument("--fullfinetune", type=bool, default=False)
     args = parser.parse_args()
 
     train(
-        dataset=args.dataset,
+        dataset=args.dataset,  # dataset on modelscope
         subset=args.subset,
         data_col=args.data,
         label_col=args.label,
@@ -407,4 +412,5 @@ if __name__ == "__main__":
         pretrain=args.pretrain,
         focal_loss=args.focalloss,
         full_finetune=args.fullfinetune,
+        epoch_num=1,
     )
