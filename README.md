@@ -1,13 +1,11 @@
-# Evaluation Framework for CCMusic Database Classification Tasks
-[![Python application](https://github.com/monet-joe/ccmusic_clstask_eval/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/monet-joe/ccmusic_clstask_eval/actions/workflows/python-app.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/monet-joe/ccmusic_clstask_eval/blob/main/LICENSE)
-
-Classify spectrograms by fine-tuned pre-trained CNN models.
+# Evaluation Framework for CCMusic Database MSA
+[![Python application](https://github.com/monet-joe/ccmusic_eval/actions/workflows/python-app.yml/badge.svg?branch=msa)](https://github.com/monet-joe/ccmusic_eval/actions/workflows/python-app.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/monet-joe/ccmusic_eval/blob/msa/LICENSE)
 
 ## Download
 ```bash
-git clone git@github.com:monet-joe/ccmusic_clstask_eval.git
-cd ccmusic_clstask_eval
+git clone -b msa git@github.com:monet-joe/ccmusic_eval.git
+cd ccmusic_eval
 ```
 
 ## Requirements
@@ -17,14 +15,17 @@ conda activate cv
 pip install -r requirements.txt
 ```
 
-## Supported backbones
-<https://www.modelscope.cn/datasets/monetjoe/cv_backbones/dataPeview>  
+## Usage
+1. run beat_track.py first to get beat information, saved to 'dataset\references'
+2. run process.py to perform structure analysis using beat information from 'dataset\references'
+3. run txt_to_lab.py to transform .txt to .lab as mir_eval need .lab
+4. run eval.py to evaluate and plot results
 
 ## Cite
 ```
 @dataset{zhaorui_liu_2021_5676893,
   author       = {Monan Zhou, Shenyang Xu, Zhaorui Liu, Zhaowen Wang, Feng Yu, Wei Li and Zijin Li},
-  title        = {CCMusic: General Database for Computational Musicology and Chinese Music Technology Research},
+  title        = {CCMusic: an Open and Diverse Database for Chinese and General Music Information Retrieval Research},
   month        = {nov},
   year         = {2021},
   publisher    = {Zenodo},
