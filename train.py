@@ -182,7 +182,8 @@ def eval_model_test(
             y_true.extend(labels.tolist())
             y_pred.extend(predicted.tolist())
 
-    report = classification_report(y_true, y_pred, target_names=classes, digits=3)
+    report = classification_report(
+        y_true, y_pred, target_names=classes, digits=3)
     cm = confusion_matrix(y_true, y_pred, normalize="all")
 
     return report, cm
@@ -291,7 +292,8 @@ def train(
     lr=0.001,
 ):
     # prepare data
-    ds, classes, num_samples = prepare_data(dataset, subset, label_col, focal_loss)
+    ds, classes, num_samples = prepare_data(
+        dataset, subset, label_col, focal_loss)
 
     # init model
     model = Net(backbone, pretrain, len(classes), full_finetune)
@@ -369,7 +371,8 @@ def train(
         scheduler.step(loss.item())
 
     finish_time = datetime.now()
-    cls_report, cm = eval_model_test(model, tesLoader, classes, data_col, label_col)
+    cls_report, cm = eval_model_test(
+        model, tesLoader, classes, data_col, label_col)
     save_history(
         model,
         tra_acc_list,
@@ -393,14 +396,14 @@ def train(
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     parser = argparse.ArgumentParser(description="train")
-    parser.add_argument("--dataset", type=str, default="ccmusic/chest_falsetto")
+    parser.add_argument("--dataset", type=str, default="ccmusic/music_genre")
     parser.add_argument("--subset", type=str, default="default")
-    parser.add_argument("--data", type=str, default="cqt")
+    parser.add_argument("--data", type=str, default="mel")
     parser.add_argument("--label", type=str, default="label")
-    parser.add_argument("--backbone", type=str, default="squeezenet1_1")
+    parser.add_argument("--backbone", type=str, default="mobilenet_v3_large")
     parser.add_argument("--pretrain", type=str, default="ImageNet1k_v1")
     parser.add_argument("--focalloss", type=bool, default=True)
-    parser.add_argument("--fullfinetune", type=bool, default=False)
+    parser.add_argument("--fullfinetune", type=bool, default=True)
     args = parser.parse_args()
 
     train(
@@ -411,6 +414,5 @@ if __name__ == "__main__":
         backbone=args.backbone,
         pretrain=args.pretrain,
         focal_loss=args.focalloss,
-        full_finetune=args.fullfinetune,
-        epoch_num=1,
+        full_finetune=args.fullfinetune
     )
