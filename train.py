@@ -399,7 +399,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, default="ccmusic/music_genre")
     parser.add_argument("--subset", type=str, default="default")
     parser.add_argument("--data", type=str, default="mel")
-    parser.add_argument("--label", type=str, default="label")
+    parser.add_argument("--label", type=str, default="thr_level_label")
     parser.add_argument("--backbone", type=str, default="mobilenet_v3_large")
     parser.add_argument("--pretrain", type=str, default="ImageNet1k_v1")
     parser.add_argument("--focalloss", type=bool, default=True)
