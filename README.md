@@ -21,15 +21,14 @@ pip install -r requirements.txt
 <https://www.modelscope.cn/datasets/monetjoe/cv_backbones/dataPeview>  
 
 ## Cite
-```
+```bibtex
 @dataset{zhaorui_liu_2021_5676893,
   author       = {Monan Zhou, Shenyang Xu, Zhaorui Liu, Zhaowen Wang, Feng Yu, Wei Li and Zijin Li},
   title        = {CCMusic: an Open and Diverse Database for Chinese and General Music Information Retrieval Research},
-  month        = {nov},
-  year         = {2021},
-  publisher    = {Zenodo},
-  version      = {1.1},
-  doi          = {10.5281/zenodo.5676893},
-  url          = {https://doi.org/10.5281/zenodo.5676893}
+  month        = {mar},
+  year         = {2024},
+  publisher    = {HuggingFace},
+  version      = {1.2},
+  url          = {https://huggingface.co/ccmusic-database}
 }
 ```
