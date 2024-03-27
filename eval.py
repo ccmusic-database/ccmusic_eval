@@ -9,6 +9,8 @@ import mir_eval
 from tqdm import tqdm
 from matplotlib import pyplot as plt
 
+plt.rcParams["font.sans-serif"] = "Times New Roman"
+
 BEATS = [
     "librosa",
     "madmom1",

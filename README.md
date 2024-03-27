@@ -21,9 +21,11 @@ python pip.py
 4. run eval.py to evaluate and plot results
 
 ### Prerequisites Steps
-1. run beat_track.py first to get beat information, saved to './MSA_dataset/references'
-2. run process.py to perform structure analysis using beat information from './MSA_dataset/references' to './MSA_dataset/estimations'
-3. run txt_to_lab.py to transform .txt to .lab as mir_eval need .lab
+0. Download audios from https://www.modelscope.cn/api/v1/datasets/ccmusic/song_structure/repo?Revision=master&FilePath=data%2Faudio.zip to './MSA_dataset/audio'
+1. Download labels from https://www.modelscope.cn/api/v1/datasets/ccmusic/song_structure/repo?Revision=master&FilePath=data%2Flabel.zip to './MSA_dataset/Annotations'
+2. run beat_track.py first to get beat information, saved to './MSA_dataset/references'
+3. run process.py to perform structure analysis using beat information from './MSA_dataset/references' to './MSA_dataset/estimations'
+4. run txt_to_lab.py to transform .txt to .lab as mir_eval need .lab
 
 
 ## Cite

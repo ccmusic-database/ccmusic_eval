@@ -6,7 +6,7 @@ plt.rcParams["font.sans-serif"] = "Times New Roman"
 def plot_with_values(
     labels: list,
     values: list,
-    filename: str = "F:\plot.pdf",
+    filename: str = "./MSA_Dataset/plot.pdf",
     aspect_ratio: float = 1.2,
     label_fontsize: int = 24,
     tick_fontsize: int = 22,
