@@ -1,3 +1,3 @@
 SR = 22050
 HOP_LEN = 1024
-DATASET_DIR = "D:\\MSA_dataset"
+DATASET_DIR = "./MSA_dataset"
