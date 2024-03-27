@@ -6,4 +6,5 @@ Cython
 madmom
 librosa
 pillow==8
-numpy==1.19
+numpy==1.20
+tqdm

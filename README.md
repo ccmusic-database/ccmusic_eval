@@ -9,17 +9,22 @@ cd ccmusic_eval
 ```
 
 ## Requirements
+Microsoft Visual C++ 14.0 or greater is required
 ```bash
 conda create -n cv --yes --file conda.txt
 conda activate cv
-pip install -r requirements.txt
+python pip.py
 ```
 
 ## Usage
+### Evaluation
+4. run eval.py to evaluate and plot results
+
+### Prerequisites Steps
 1. run beat_track.py first to get beat information, saved to './MSA_dataset/references'
 2. run process.py to perform structure analysis using beat information from './MSA_dataset/references' to './MSA_dataset/estimations'
 3. run txt_to_lab.py to transform .txt to .lab as mir_eval need .lab
-4. run eval.py to evaluate and plot results
+
 
 ## Cite
 ```bibtex
