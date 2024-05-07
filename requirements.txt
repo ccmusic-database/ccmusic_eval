@@ -5,6 +5,6 @@ jams
 Cython
 madmom
 librosa
-pillow==8
+pillow==10.3
 numpy==1.20
 tqdm
