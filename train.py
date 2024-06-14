@@ -328,8 +328,8 @@ def train(
 
     # train
     start_time = datetime.now()
-    print(f"Start training [{backbone}] at {time_stamp(start_time)} ...")
     tra_acc_list, val_acc_list, loss_list, lr_list = [], [], [], []
+    print(f"Start training [{backbone}] at {time_stamp(start_time)} ...")
     for epoch in range(epoch_num):  # loop over the dataset multiple times
         lr_str = optimizer.param_groups[0]["lr"]
         lr_list.append(lr_str)
@@ -337,7 +337,7 @@ def train(
         for i, data in enumerate(
             tqdm(
                 traLoader,
-                desc=f"Epoch={epoch + 1}/{epoch_num}, lr={lr_str}",
+                desc=f"epoch {epoch + 1}/{epoch_num}, lr={lr_str}, loss={running_loss}:",
                 unit="batch",
             ),
             0,
@@ -355,10 +355,10 @@ def train(
             running_loss += loss.item()
             # print every 2000 mini-batches
             if i % iteration == iteration - 1:
-                print(
-                    "[%d, %5d] loss: %.4f"
-                    % (epoch + 1, i + 1, running_loss / iteration)
-                )
+                # print(
+                #     "[%d, %5d] loss: %.4f"
+                #     % (epoch + 1, i + 1, running_loss / iteration)
+                # )
                 loss_list.append(running_loss / iteration)
 
             running_loss = 0.0
