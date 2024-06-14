@@ -1,17 +1,15 @@
 import csv
 import argparse
 import warnings
-import numpy as np
-import torch.nn as nn
 import torch.utils.data
 import torch.optim as optim
 from datetime import datetime
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
-from plot import plot_acc, plot_loss, plot_confusion_matrix
+from plot import np, plot_acc, plot_loss, plot_confusion_matrix
 from data import DataLoader, prepare_data, load_data
 from utils import torch, tqdm, to_cuda
 from focalLoss import FocalLoss
-from model import os, Net
+from model import os, nn, Net
 
 
 def eval_model_train(
