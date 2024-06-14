@@ -69,7 +69,6 @@ def save_acc(tra_acc_list, val_acc_list, save_path):
     show_point(max2, y2)
     plt.legend()
     plt.savefig(save_path + "/acc.pdf", bbox_inches="tight")
-    plt.savefig(save_path + "/acc.jpg", bbox_inches="tight")
     plt.close()
 
 
@@ -83,7 +82,6 @@ def save_loss(loss_list, save_path):
     plt.ylabel("loss")
     plt.plot(x_loss, smooth(loss_list))
     plt.savefig(save_path + "/loss.pdf", bbox_inches="tight")
-    plt.savefig(save_path + "/loss.jpg", bbox_inches="tight")
     plt.close()
 
 
@@ -180,7 +178,6 @@ def save_confusion_matrix(cm, labels_name, save_path, title="Confusion matrix"):
     plt.xlabel("predicted label")
     plt.tight_layout()
     plt.savefig(save_path + "/mat.pdf", bbox_inches="tight")
-    plt.savefig(save_path + "/mat.jpg", bbox_inches="tight")
     plt.close()
 
 

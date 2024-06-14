@@ -17,6 +17,7 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 from plot import save_acc, save_loss, save_confusion_matrix
 from utils import time_stamp, to_cuda
 from model import Net
+from tqdm import tqdm
 
 
 def transform(example_batch, data_column: str, label_column: str, img_size: int):
@@ -332,12 +333,15 @@ def train(
     for epoch in range(epoch_num):  # loop over the dataset multiple times
         lr_str = optimizer.param_groups[0]["lr"]
         lr_list.append(lr_str)
-        print(
-            f" Epoch {epoch + 1}/{epoch_num} ".center(40, "-"),
-            f"\nLearning rate: {lr_str}",
-        )
         running_loss = 0.0
-        for i, data in enumerate(traLoader, 0):
+        for i, data in enumerate(
+            tqdm(
+                traLoader,
+                desc=f"Epoch={epoch + 1}/{epoch_num}, lr={lr_str}",
+                unit="batch",
+            ),
+            0,
+        ):
             # get the inputs
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
             # zero the parameter gradients
