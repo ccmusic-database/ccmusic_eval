@@ -146,7 +146,7 @@ def eval_model_train(
             y_pred.extend(predicted.tolist())
 
     acc = 100.0 * accuracy_score(y_true, y_pred)
-    print(f"Training acc   : {str(round(acc, 2))}%")
+    print(f"Training accuracy : {str(round(acc, 2))}%")
     tra_acc_list.append(acc)
 
 
@@ -168,7 +168,7 @@ def eval_model_valid(
             y_pred.extend(predicted.tolist())
 
     acc = 100.0 * accuracy_score(y_true, y_pred)
-    print(f"Validation acc : {str(round(acc, 2))}%")
+    print(f"Validation accuracy : {str(round(acc, 2))}%")
 
     if (not val_acc_list) or (val_acc_list and acc > val_acc_list[-1]):
         torch.save(model.state_dict(), f"{log_dir}/save.pt")
@@ -221,15 +221,14 @@ Backbone      : {backbone}
 Dataset       : {dataset}
 Data column   : {data_col}
 Label column  : {label_col}
-Start time    : {time_stamp(start_time)}
-Finish time   : {time_stamp(finish_time)}
+Start time    : {start_time}
+Finish time   : {finish_time}
 Time cost     : {(finish_time - start_time).seconds}s
 Full finetune : {full_finetune}
-Focal loss    : {focal_loss}"""
+Use focal loss: {focal_loss}"""
 
     with open(f"{log_dir}/result.log", "w", encoding="utf-8") as f:
         f.write(cls_report + log)
-    f.close()
 
     # save confusion_matrix
     np.savetxt(f"{log_dir}/mat.csv", cm, delimiter=",")
@@ -256,13 +255,13 @@ def save_history(
     full_finetune: bool,
 ):
     acc_len = len(tra_acc_list)
-    with open(f"{log_dir}/acc.csv", "w", newline="") as csvfile:
+    with open(f"{log_dir}/acc.csv", "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["tra_acc_list", "val_acc_list", "lr_list"])
         for i in range(acc_len):
             writer.writerow([tra_acc_list[i], val_acc_list[i], lr_list[i]])
 
-    with open(f"{log_dir}/loss.csv", "w", newline="") as csvfile:
+    with open(f"{log_dir}/loss.csv", "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["loss_list"])
         for loss in loss_list:
@@ -340,7 +339,7 @@ def train(
 
     # train
     start_time = datetime.now()
-    log_dir = f"./logs/{time_stamp()}"
+    log_dir = f"./logs/{time_stamp(start_time)}"
     os.makedirs(log_dir, exist_ok=True)
     print(f"Start tuning {backbone} at {start_time} ...")
     tra_acc_list, val_acc_list, loss_list, lr_list = [], [], [], []

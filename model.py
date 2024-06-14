@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 from modelscope.msdatasets import MsDataset
-from utils import url_download
+from utils import download
 
 
 class Net:
@@ -73,7 +73,7 @@ class Net:
         os.makedirs(model_dir, exist_ok=True)
 
         if not os.path.exists(weight_path):
-            url_download(weight_url, weight_path)
+            download(weight_url, weight_path)
 
         return weight_path
 

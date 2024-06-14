@@ -5,7 +5,7 @@ import requests
 from tqdm import tqdm
 
 
-def url_download(url: str, fname: str, max_retries=3):
+def download(url: str, fname: str, max_retries=3):
     retry_count = 0
     while retry_count < max_retries:
         try:
@@ -43,9 +43,7 @@ def url_download(url: str, fname: str, max_retries=3):
             continue
 
     else:
-        print(
-            f"Error: the operation could not be completed after {max_retries} retries."
-        )
+        print(f"The operation could not be completed after {max_retries} retries.")
         exit()
 
 
@@ -59,9 +57,9 @@ def unzip_file(zip_src, dst_dir):
         print("This is not zip")
 
 
-def time_stamp(timestamp=None):
-    if timestamp != None:
-        return timestamp.strftime("%Y-%m-%d %H:%M:%S")
+def time_stamp(timestamp):
+    if timestamp:
+        return timestamp.strftime("%Y-%m-%d_%H-%M-%S")
 
     return time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime(time.time()))
 
