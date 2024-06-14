@@ -54,7 +54,7 @@ class Net:
             if backbone_ver == backbone_info["ver"]:
                 return backbone_info
 
-        print("[Backbone not found] Check if --backbone is correct!")
+        print("[Backbone not found] Please check if --backbone is correct!")
         exit()
 
     def _model_info(self, backbone: str):
@@ -67,7 +67,7 @@ class Net:
             int(backbone_info["input_size"]),
         )
 
-    def _download_model(self, weight_url):
+    def _download_model(self, weight_url: str):
         model_dir = "./model"
         weight_path = f'{model_dir}/{weight_url.split("/")[-1]}'
         os.makedirs(model_dir, exist_ok=True)
