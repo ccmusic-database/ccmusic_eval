@@ -1,4 +1,3 @@
-import time
 import torch
 import zipfile
 import requests
@@ -54,14 +53,7 @@ def unzip_file(zip_src, dst_dir):
         for file in fz.namelist():
             fz.extract(file, dst_dir)
     else:
-        print("This is not zip")
-
-
-def time_stamp(timestamp):
-    if timestamp:
-        return timestamp.strftime("%Y-%m-%d_%H-%M-%S")
-
-    return time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime(time.time()))
+        print("This is not a zip.")
 
 
 def to_cuda(x):

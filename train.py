@@ -1,6 +1,4 @@
-import os
 import csv
-import torch
 import argparse
 import warnings
 import numpy as np
@@ -8,125 +6,12 @@ import torch.nn as nn
 import torch.utils.data
 import torch.optim as optim
 from datetime import datetime
-from functools import partial
-from focalLoss import FocalLoss
-from torch.utils.data import DataLoader
-from modelscope.msdatasets import MsDataset
-from torchvision.transforms import Compose, Resize, RandomAffine, ToTensor, Normalize
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
-from plot import save_acc, save_loss, save_confusion_matrix
-from utils import time_stamp, to_cuda
-from model import Net
-from tqdm import tqdm
-
-
-def transform(example_batch, data_column: str, label_column: str, img_size: int):
-    compose = Compose(
-        [
-            Resize([img_size, img_size]),
-            RandomAffine(5),
-            ToTensor(),
-            Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ]
-    )
-    inputs = [compose(x.convert("RGB")) for x in example_batch[data_column]]
-    example_batch[data_column] = inputs
-    keys = list(example_batch.keys())
-    for key in keys:
-        if not (key == data_column or key == label_column):
-            del example_batch[key]
-
-    return example_batch
-
-
-def prepare_data(dataset: str, subset: str, label_col: str, focal_loss: bool):
-    print("Preparing data...")
-    ds = MsDataset.load(dataset, subset_name=subset)
-    classes = ds["test"]._hf_ds.features[label_col].names
-    num_samples = []
-
-    if focal_loss:
-        each_nums = {k: 0 for k in classes}
-        for item in ds["train"]:
-            each_nums[classes[item[label_col]]] += 1
-
-        num_samples = list(each_nums.values())
-
-    print("Data prepared.")
-    return ds, classes, num_samples
-
-
-def load_data(
-    ds: MsDataset,
-    data_col: str,
-    label_col: str,
-    input_size: int,
-    has_bn: bool,
-    shuffle=True,
-    batch_size=4,
-    num_workers=2,
-):
-    print("Loadeding data...")
-    bs = batch_size
-    ds_train = ds["train"]._hf_ds
-    ds_valid = ds["validation"]._hf_ds
-    ds_test = ds["test"]._hf_ds
-
-    if has_bn:
-        print("The model has bn layer")
-        if bs < 2:
-            print("Switch batch_size >= 2")
-            bs = 2
-
-    trainset = ds_train.with_transform(
-        partial(
-            transform,
-            data_column=data_col,
-            label_column=label_col,
-            img_size=input_size,
-        )
-    )
-    validset = ds_valid.with_transform(
-        partial(
-            transform,
-            data_column=data_col,
-            label_column=label_col,
-            img_size=input_size,
-        )
-    )
-    testset = ds_test.with_transform(
-        partial(
-            transform,
-            data_column=data_col,
-            label_column=label_col,
-            img_size=input_size,
-        )
-    )
-
-    traLoader = DataLoader(
-        trainset,
-        batch_size=bs,
-        shuffle=shuffle,
-        num_workers=num_workers,
-        drop_last=has_bn,
-    )
-    valLoader = DataLoader(
-        validset,
-        batch_size=bs,
-        shuffle=shuffle,
-        num_workers=num_workers,
-        drop_last=has_bn,
-    )
-    tesLoader = DataLoader(
-        testset,
-        batch_size=bs,
-        shuffle=shuffle,
-        num_workers=num_workers,
-        drop_last=has_bn,
-    )
-    print("Data loaded.")
-
-    return traLoader, valLoader, tesLoader
+from plot import plot_acc, plot_loss, plot_confusion_matrix
+from data import DataLoader, prepare_data, load_data
+from utils import torch, tqdm, to_cuda
+from focalLoss import FocalLoss
+from model import os, Net
 
 
 def eval_model_train(
@@ -146,7 +31,7 @@ def eval_model_train(
             y_pred.extend(predicted.tolist())
 
     acc = 100.0 * accuracy_score(y_true, y_pred)
-    print(f"Training accuracy : {str(round(acc, 2))}%")
+    print(f"Training accuracy : {round(acc, 2)}%")
     tra_acc_list.append(acc)
 
 
@@ -168,7 +53,7 @@ def eval_model_valid(
             y_pred.extend(predicted.tolist())
 
     acc = 100.0 * accuracy_score(y_true, y_pred)
-    print(f"Validation accuracy : {str(round(acc, 2))}%")
+    print(f"Validation accuracy : {round(acc, 2)}%")
 
     if (not val_acc_list) or (val_acc_list and acc > val_acc_list[-1]):
         torch.save(model.state_dict(), f"{log_dir}/save.pt")
@@ -231,9 +116,9 @@ Use focal loss: {focal_loss}"""
         f.write(cls_report + log)
 
     # save confusion_matrix
-    np.savetxt(f"{log_dir}/mat.csv", cm, delimiter=",")
-    save_confusion_matrix(cm, classes, log_dir)
-    print(f"{cls_report}\nConfusion matrix :\n{str(cm.round(3))}\n{log}")
+    np.savetxt(f"{log_dir}/mat.csv", cm, delimiter=",", encoding="utf-8")
+    plot_confusion_matrix(cm, classes, log_dir)
+    print(f"{cls_report}\nConfusion matrix :\n{cm.round(3)}\n{log}")
 
 
 def save_history(
@@ -267,8 +152,8 @@ def save_history(
         for loss in loss_list:
             writer.writerow([loss])
 
-    save_acc(tra_acc_list, val_acc_list, log_dir)
-    save_loss(loss_list, log_dir)
+    plot_acc(tra_acc_list, val_acc_list, log_dir)
+    plot_loss(loss_list, log_dir)
     save_log(
         classes,
         cm,
@@ -339,7 +224,7 @@ def train(
 
     # train
     start_time = datetime.now()
-    log_dir = f"./logs/{time_stamp(start_time)}"
+    log_dir = f"./logs/{start_time.strftime('%Y-%m-%d_%H-%M-%S')}"
     os.makedirs(log_dir, exist_ok=True)
     print(f"Start tuning {backbone} at {start_time} ...")
     tra_acc_list, val_acc_list, loss_list, lr_list = [], [], [], []
@@ -355,7 +240,7 @@ def train(
                 optimizer.zero_grad()
                 # forward + backward + optimize
                 outputs = model.forward(inputs)
-                loss = criterion(outputs, labels)
+                loss: torch.Tensor = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
                 # print statistics
