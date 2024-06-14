@@ -9,13 +9,12 @@ def url_download(url: str, fname: str, max_retries=3):
     retry_count = 0
     while retry_count < max_retries:
         try:
-            print(f"Downloading: {url}")
             resp = requests.get(url, stream=True)
             # Check the response status code (raise an exception if it's not in the range 200-299)
             resp.raise_for_status()
             total = int(resp.headers.get("content-length", 0))
             with open(fname, "wb") as file, tqdm(
-                desc=fname,
+                desc=f"Downloading {url} to {fname}...",
                 total=total,
                 unit="iB",
                 unit_scale=True,
@@ -24,7 +23,6 @@ def url_download(url: str, fname: str, max_retries=3):
                 for data in resp.iter_content(chunk_size=1024):
                     size = file.write(data)
                     bar.update(size)
-            print(f"Download of {url} completed.")
             return
 
         except requests.exceptions.HTTPError as errh:
