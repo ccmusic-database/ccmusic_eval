@@ -10,7 +10,6 @@ class Net:
     def __init__(
         self,
         backbone: str,
-        pretrain: str,
         cls_num: int,
         full_finetune: bool,
         weight_path="",
@@ -22,9 +21,7 @@ class Net:
         self.output_size = 512
         self.training = weight_path == ""
         self.full_finetune = full_finetune
-        self.type, self.weight_url, self.input_size = self._model_info(
-            backbone, pretrain
-        )
+        self.type, self.weight_url, self.input_size = self._model_info(backbone)
         self.model = eval("models.%s()" % backbone)
         linear_output = self._set_outsize()
 
@@ -60,10 +57,8 @@ class Net:
         print("[Backbone not found] Check if --backbone & --pretrain are correct!")
         exit()
 
-    def _model_info(self, backbone, pretrain):
-        backbone_list = MsDataset.load(
-            "monetjoe/cv_backbones", subset_name=pretrain, split="train"
-        )
+    def _model_info(self, backbone: str):
+        backbone_list = MsDataset.load("monetjoe/cv_backbones", split="train")
         backbone_info = self._get_backbone(backbone, backbone_list)
 
         return (

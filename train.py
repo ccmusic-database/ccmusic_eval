@@ -3,11 +3,10 @@ import csv
 import torch
 import argparse
 import warnings
-import torch.utils.data
 import numpy as np
 import torch.nn as nn
+import torch.utils.data
 import torch.optim as optim
-from model import Net
 from datetime import datetime
 from functools import partial
 from focalLoss import FocalLoss
@@ -17,6 +16,7 @@ from torchvision.transforms import Compose, Resize, RandomAffine, ToTensor, Norm
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from plot import save_acc, save_loss, save_confusion_matrix
 from utils import time_stamp, to_cuda
+from model import Net
 
 
 def transform(example_batch, data_column: str, label_column: str, img_size: int):
@@ -182,8 +182,7 @@ def eval_model_test(
             y_true.extend(labels.tolist())
             y_pred.extend(predicted.tolist())
 
-    report = classification_report(
-        y_true, y_pred, target_names=classes, digits=3)
+    report = classification_report(y_true, y_pred, target_names=classes, digits=3)
     cm = confusion_matrix(y_true, y_pred, normalize="all")
 
     return report, cm
@@ -197,7 +196,6 @@ def save_log(
     cls_report: str,
     log_dir: str,
     backbone: str,
-    pretrain: str,
     data_col: str,
     focal_loss: str,
     full_finetune: bool,
@@ -205,7 +203,6 @@ def save_log(
     log = f"""
 Class num     : {len(classes)}
 Backbone      : {backbone}
-Pretrain src  : {pretrain}
 Data column   : {data_col}
 Start time    : {time_stamp(start_time)}
 Finish time   : {time_stamp(finish_time)}
@@ -237,7 +234,6 @@ def save_history(
     dataset: str,
     data_col: str,
     backbone: str,
-    pretrain: str,
     focal_loss: str,
     full_finetune: bool,
 ):
@@ -271,7 +267,6 @@ def save_history(
         cls_report,
         log_dir,
         backbone,
-        pretrain,
         data_col,
         focal_loss,
         full_finetune,
@@ -284,7 +279,6 @@ def train(
     data_col: str,
     label_col: str,
     backbone: str,
-    pretrain: str,
     focal_loss: bool,
     full_finetune: bool,
     epoch_num=40,
@@ -292,11 +286,10 @@ def train(
     lr=0.001,
 ):
     # prepare data
-    ds, classes, num_samples = prepare_data(
-        dataset, subset, label_col, focal_loss)
+    ds, classes, num_samples = prepare_data(dataset, subset, label_col, focal_loss)
 
     # init model
-    model = Net(backbone, pretrain, len(classes), full_finetune)
+    model = Net(backbone, len(classes), full_finetune)
 
     # load data
     traLoader, valLoader, tesLoader = load_data(
@@ -371,8 +364,7 @@ def train(
         scheduler.step(loss.item())
 
     finish_time = datetime.now()
-    cls_report, cm = eval_model_test(
-        model, tesLoader, classes, data_col, label_col)
+    cls_report, cm = eval_model_test(model, tesLoader, classes, data_col, label_col)
     save_history(
         model,
         tra_acc_list,
@@ -387,7 +379,6 @@ def train(
         dataset,
         data_col,
         backbone,
-        pretrain,
         focal_loss,
         full_finetune,
     )
@@ -401,7 +392,6 @@ if __name__ == "__main__":
     parser.add_argument("--data", type=str, default="cqt")
     parser.add_argument("--label", type=str, default="thr_level_label")
     parser.add_argument("--backbone", type=str, default="vgg19_bn")
-    parser.add_argument("--pretrain", type=str, default="ImageNet1k_v1")
     parser.add_argument("--focalloss", type=bool, default=True)
     parser.add_argument("--fullfinetune", type=bool, default=True)
     args = parser.parse_args()
@@ -412,7 +402,6 @@ if __name__ == "__main__":
         data_col=args.data,
         label_col=args.label,
         backbone=args.backbone,
-        pretrain=args.pretrain,
         focal_loss=args.focalloss,
-        full_finetune=args.fullfinetune
+        full_finetune=args.fullfinetune,
     )
