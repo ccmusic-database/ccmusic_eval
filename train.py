@@ -156,6 +156,7 @@ def eval_model_valid(
     val_acc_list: list,
     data_col: str,
     label_col: str,
+    log_dir: str,
 ):
     y_true, y_pred = [], []
     with torch.no_grad():
@@ -168,12 +169,23 @@ def eval_model_valid(
 
     acc = 100.0 * accuracy_score(y_true, y_pred)
     print(f"Validation acc : {str(round(acc, 2))}%")
+
+    if acc > val_acc_list[-1]:
+        torch.save(model.state_dict(), f"{log_dir}/save.pt")
+        print("Model saved.")
+
     val_acc_list.append(acc)
 
 
 def eval_model_test(
-    model: Net, testLoader: DataLoader, classes: list, data_col: str, label_col: str
+    backbone: str,
+    testLoader: DataLoader,
+    classes: list,
+    data_col: str,
+    label_col: str,
+    log_dir: str,
 ):
+    model = Net(backbone, len(classes), False, weight_path=f"{log_dir}/save.pt")
     y_true, y_pred = [], []
     with torch.no_grad():
         for data in testLoader:
@@ -192,23 +204,27 @@ def eval_model_test(
 def save_log(
     classes: list,
     cm: np.ndarray,
-    start_time: str,
-    finish_time: str,
+    start_time: datetime,
+    finish_time: datetime,
     cls_report: str,
     log_dir: str,
     backbone: str,
+    dataset: str,
     data_col: str,
+    label_col: str,
     focal_loss: str,
     full_finetune: bool,
 ):
     log = f"""
 Class num     : {len(classes)}
 Backbone      : {backbone}
+Dataset       : {dataset}
 Data column   : {data_col}
+Label column  : {label_col}
 Start time    : {time_stamp(start_time)}
 Finish time   : {time_stamp(finish_time)}
-Time cost     : {str((finish_time - start_time).seconds)}s
-Full finetune : {str(full_finetune)}
+Time cost     : {(finish_time - start_time).seconds}s
+Full finetune : {full_finetune}
 Focal loss    : {focal_loss}"""
 
     with open(f"{log_dir}/result.log", "w", encoding="utf-8") as f:
@@ -222,7 +238,7 @@ Focal loss    : {focal_loss}"""
 
 
 def save_history(
-    model: Net,
+    log_dir: str,
     tra_acc_list: list,
     val_acc_list: list,
     loss_list: list,
@@ -234,14 +250,11 @@ def save_history(
     finish_time: str,
     dataset: str,
     data_col: str,
+    label_col: str,
     backbone: str,
     focal_loss: str,
     full_finetune: bool,
 ):
-    results_dir = f"./logs/{dataset.replace('/', '_')}"
-    log_dir = f"{results_dir}/{backbone}_{data_col}_{len(classes)}cls_{time_stamp()}"
-    os.makedirs(log_dir, exist_ok=True)
-
     acc_len = len(tra_acc_list)
     with open(f"{log_dir}/acc.csv", "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
@@ -255,9 +268,6 @@ def save_history(
         for loss in loss_list:
             writer.writerow([loss])
 
-    torch.save(model.state_dict(), f"{log_dir}/save.pt")
-    print("Model saved.")
-
     save_acc(tra_acc_list, val_acc_list, log_dir)
     save_loss(loss_list, log_dir)
     save_log(
@@ -268,7 +278,9 @@ def save_history(
         cls_report,
         log_dir,
         backbone,
+        dataset,
         data_col,
+        label_col,
         focal_loss,
         full_finetune,
     )
@@ -328,8 +340,10 @@ def train(
 
     # train
     start_time = datetime.now()
+    log_dir = f"./logs/{time_stamp()}"
+    os.makedirs(log_dir, exist_ok=True)
+    print(f"Start tuning {backbone} at {start_time} ...")
     tra_acc_list, val_acc_list, loss_list, lr_list = [], [], [], []
-    print(f"Start training [{backbone}] at {time_stamp(start_time)} ...")
     for epoch in range(epoch_num):  # loop over the dataset multiple times
         lr: float = optimizer.param_groups[0]["lr"]
         lr_list.append(lr)
@@ -364,13 +378,15 @@ def train(
                 pbar.update(1)
 
         eval_model_train(model, traLoader, tra_acc_list, data_col, label_col)
-        eval_model_valid(model, valLoader, val_acc_list, data_col, label_col)
+        eval_model_valid(model, valLoader, val_acc_list, data_col, label_col, log_dir)
         scheduler.step(loss.item())
 
     finish_time = datetime.now()
-    cls_report, cm = eval_model_test(model, tesLoader, classes, data_col, label_col)
+    cls_report, cm = eval_model_test(
+        backbone, tesLoader, classes, data_col, label_col, log_dir
+    )
     save_history(
-        model,
+        log_dir,
         tra_acc_list,
         val_acc_list,
         loss_list,
@@ -380,8 +396,9 @@ def train(
         cls_report,
         start_time,
         finish_time,
-        dataset,
+        f"{dataset} - {subset}",
         data_col,
+        label_col,
         backbone,
         focal_loss,
         full_finetune,
