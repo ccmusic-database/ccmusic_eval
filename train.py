@@ -331,37 +331,39 @@ def train(
     tra_acc_list, val_acc_list, loss_list, lr_list = [], [], [], []
     print(f"Start training [{backbone}] at {time_stamp(start_time)} ...")
     for epoch in range(epoch_num):  # loop over the dataset multiple times
-        lr_str = optimizer.param_groups[0]["lr"]
-        lr_list.append(lr_str)
+        lr: float = optimizer.param_groups[0]["lr"]
+        lr_list.append(lr)
         running_loss = 0.0
-        for i, data in enumerate(
-            tqdm(
-                traLoader,
-                desc=f"epoch {epoch + 1}/{epoch_num}, lr={lr_str}, loss={running_loss}:",
-                unit="batch",
-            ),
-            0,
-        ):
-            # get the inputs
-            inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
-            # zero the parameter gradients
-            optimizer.zero_grad()
-            # forward + backward + optimize
-            outputs = model.forward(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-            # print statistics
-            running_loss += loss.item()
-            # print every 2000 mini-batches
-            if i % iteration == iteration - 1:
-                # print(
-                #     "[%d, %5d] loss: %.4f"
-                #     % (epoch + 1, i + 1, running_loss / iteration)
-                # )
-                loss_list.append(running_loss / iteration)
+        with tqdm(total=len(traLoader), unit="batch") as pbar:
+            for i, data in enumerate(traLoader, 0):
+                # get the inputs
+                inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
+                # zero the parameter gradients
+                optimizer.zero_grad()
+                # forward + backward + optimize
+                outputs = model.forward(inputs)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+                # print statistics
+                running_loss += loss.item()
+                # print every 2000 mini-batches
+                if i % iteration == iteration - 1:
+                    pbar.set_description(
+                        "epoch=%d/%d, lr=%.4f, iter=%d/%d, loss=%.4f"
+                        % (
+                            epoch + 1,
+                            epoch_num,
+                            lr,
+                            i + 1,
+                            iteration,
+                            running_loss / iteration,
+                        )
+                    )
+                    loss_list.append(running_loss / iteration)
 
-            running_loss = 0.0
+                running_loss = 0.0
+                pbar.update(1)
 
         eval_model_train(model, traLoader, tra_acc_list, data_col, label_col)
         eval_model_valid(model, valLoader, val_acc_list, data_col, label_col)
