@@ -7,3 +7,4 @@ autopep8
 datasets
 pillow==10.3
 modelscope
+transformers

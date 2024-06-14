@@ -170,9 +170,9 @@ def eval_model_valid(
     acc = 100.0 * accuracy_score(y_true, y_pred)
     print(f"Validation acc : {str(round(acc, 2))}%")
 
-    if acc > val_acc_list[-1]:
+    if (not val_acc_list) or (val_acc_list and acc > val_acc_list[-1]):
         torch.save(model.state_dict(), f"{log_dir}/save.pt")
-        print("Model saved.")
+        print("Weights were saved.")
 
     val_acc_list.append(acc)
 
