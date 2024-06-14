@@ -350,13 +350,11 @@ def train(
                 # print every 2000 mini-batches
                 if i % iteration == iteration - 1:
                     pbar.set_description(
-                        "epoch=%d/%d, lr=%.4f, iter=%d/%d, loss=%.4f"
+                        "epoch=%d/%d, lr=%.4f, loss=%.4f"
                         % (
                             epoch + 1,
                             epoch_num,
                             lr,
-                            i + 1,
-                            iteration,
                             running_loss / iteration,
                         )
                     )
@@ -393,13 +391,13 @@ def train(
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     parser = argparse.ArgumentParser(description="train")
-    parser.add_argument("--dataset", type=str, default="ccmusic/music_genre")
+    parser.add_argument("--dataset", type=str, default="ccmusic/chest_falsetto")
     parser.add_argument("--subset", type=str, default="eval")
     parser.add_argument("--data", type=str, default="cqt")
-    parser.add_argument("--label", type=str, default="thr_level_label")
-    parser.add_argument("--backbone", type=str, default="vgg19_bn")
-    parser.add_argument("--focalloss", type=bool, default=True)
-    parser.add_argument("--fullfinetune", type=bool, default=True)
+    parser.add_argument("--label", type=str, default="singing_method")
+    parser.add_argument("--backbone", type=str, default="squeezenet1_1")
+    parser.add_argument("--focalloss", type=bool, default=False)
+    parser.add_argument("--fullfinetune", type=bool, default=False)
     args = parser.parse_args()
 
     train(
