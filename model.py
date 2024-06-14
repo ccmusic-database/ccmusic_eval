@@ -54,7 +54,7 @@ class Net:
             if backbone_ver == backbone_info["ver"]:
                 return backbone_info
 
-        print("[Backbone not found] Check if --backbone & --pretrain are correct!")
+        print("[Backbone not found] Check if --backbone is correct!")
         exit()
 
     def _model_info(self, backbone: str):
