@@ -34,8 +34,8 @@ def plot_acc(tra_acc_list, val_acc_list, save_path):
     max2 = np.argmax(y2)
 
     plt.title("Accuracy of training and validation", fontweight="bold")
-    plt.xlabel("epoch")
-    plt.ylabel("accuracy(%)")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy(%)")
     plt.plot(x, y1, label="Training")
     plt.plot(x, y2, label="Validation")
     plt.plot(1 + max1, y1[max1], "r-o")
@@ -53,8 +53,8 @@ def plot_loss(loss_list, save_path):
         x_loss.append(i + 1)
 
     plt.title("Loss curve", fontweight="bold")
-    plt.xlabel("iteration")
-    plt.ylabel("loss")
+    plt.xlabel("Iteration")
+    plt.ylabel("Loss")
     plt.plot(x_loss, smooth(loss_list))
     plt.savefig(save_path + "/loss.pdf", bbox_inches="tight")
     plt.close()
@@ -64,17 +64,26 @@ def plot_confusion_matrix(
     cm: np.ndarray, labels_name: list, save_path: str, title="Confusion matrix"
 ):
     cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]  # Normalized
-    # Display an image on a specific window
-    plt.imshow(cm, interpolation="nearest")
-    plt.title(title, fontweight="bold")  # image caption
+    plt.imshow(cm, interpolation="nearest", cmap="Blues")  # 使用 'Blues' colormap
+    plt.title(title, fontweight="bold")  # 图像标题
     plt.colorbar()
     num_local = np.array(range(len(labels_name)))
-    # print the labels on the x-axis coordinates
-    plt.xticks(num_local, labels_name, rotation=90)
-    # print the label on the y-axis coordinate
+    # 在色块上添加数值
+    for i in range(len(labels_name)):
+        for j in range(len(labels_name)):
+            plt.text(
+                j,
+                i,
+                format(cm[i, j], ".2f"),
+                horizontalalignment="center",
+                color="black" if cm[i, j] <= 0.5 else "white",
+            )  # 根据色块亮度选择文本颜色
+    # 在x轴坐标上打印标签
+    plt.xticks(num_local, labels_name, rotation=45)
+    # 在y轴坐标上打印标签
     plt.yticks(num_local, labels_name)
-    plt.ylabel("true label")
-    plt.xlabel("predicted label")
+    plt.ylabel("True label")
+    plt.xlabel("Predicted label")
     plt.tight_layout()
     plt.savefig(save_path + "/mat.pdf", bbox_inches="tight")
     plt.close()
