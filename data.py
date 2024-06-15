@@ -26,7 +26,11 @@ def transform(example_batch, data_column: str, label_column: str, img_size: int)
 def prepare_data(dataset: str, subset: str, label_col: str, focal_loss: bool):
     print("Preparing data...")
     ds = MsDataset.load(dataset, subset_name=subset)
-    classes = ds["test"]._hf_ds.features[label_col].names
+    try:
+        classes = ds["train"]._hf_ds.features[label_col].names
+    except AttributeError:
+        classes = ds["train"].features[label_col].names
+
     num_samples = []
 
     if focal_loss:
@@ -52,9 +56,14 @@ def load_data(
 ):
     print("Loadeding data...")
     bs = batch_size
-    ds_train = ds["train"]._hf_ds
-    ds_valid = ds["validation"]._hf_ds
-    ds_test = ds["test"]._hf_ds
+    try:
+        ds_train = ds["train"]._hf_ds
+        ds_valid = ds["validation"]._hf_ds
+        ds_test = ds["test"]._hf_ds
+    except AttributeError:
+        ds_train = ds["train"]
+        ds_valid = ds["validation"]
+        ds_test = ds["test"]
 
     if has_bn:
         print("The model has bn layer")
