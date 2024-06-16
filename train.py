@@ -106,13 +106,13 @@ Backbone       : {backbone}
 Dataset        : {dataset}
 Data column    : {data_col}
 Label column   : {label_col}
-Start time     : {start_time}
-Finish time    : {finish_time}
+Start time     : {start_time.strftime('%Y-%m-%d %H:%M:%S')}
+Finish time    : {finish_time.strftime('%Y-%m-%d %H:%M:%S')}
 Time cost      : {(finish_time - start_time).seconds}s
 Full finetune  : {full_finetune}
 Use focal loss : {focal_loss}
-Best train acc : {best_train_acc}%
-Best eval acc  : {best_eval_acc}%
+Best train acc : {round(best_train_acc, 2)}%
+Best eval acc  : {round(best_eval_acc, 2)}%
 """
 
     with open(f"{log_dir}/result.log", "w", encoding="utf-8") as f:
