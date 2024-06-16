@@ -96,19 +96,24 @@ def save_log(
     data_col: str,
     label_col: str,
     focal_loss: str,
+    best_train_acc: float,
+    best_eval_acc: float,
     full_finetune: bool,
 ):
     log = f"""
-Class num     : {len(classes)}
-Backbone      : {backbone}
-Dataset       : {dataset}
-Data column   : {data_col}
-Label column  : {label_col}
-Start time    : {start_time}
-Finish time   : {finish_time}
-Time cost     : {(finish_time - start_time).seconds}s
-Full finetune : {full_finetune}
-Use focal loss: {focal_loss}"""
+Class num      : {len(classes)}
+Backbone       : {backbone}
+Dataset        : {dataset}
+Data column    : {data_col}
+Label column   : {label_col}
+Start time     : {start_time}
+Finish time    : {finish_time}
+Time cost      : {(finish_time - start_time).seconds}s
+Full finetune  : {full_finetune}
+Use focal loss : {focal_loss}
+Best train acc : {best_train_acc}%
+Best eval acc  : {best_eval_acc}%
+"""
 
     with open(f"{log_dir}/result.log", "w", encoding="utf-8") as f:
         f.write(cls_report + log)
@@ -164,6 +169,8 @@ def save_history(
         data_col,
         label_col,
         focal_loss,
+        max(tra_acc_list),
+        max(val_acc_list),
         full_finetune,
     )
 
