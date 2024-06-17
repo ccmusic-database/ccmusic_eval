@@ -1,10 +1,10 @@
 import csv
-import random
 import argparse
 import warnings
 import torch.utils.data
 import torch.optim as optim
 from datetime import datetime
+from torch.utils.data import SubsetRandomSampler
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from plot import np, plot_acc, plot_loss, plot_confusion_matrix
 from data import DataLoader, prepare_data, load_data
@@ -22,9 +22,17 @@ def eval_model_train(
     sample_size: int,
 ):
     y_true, y_pred = [], []
-    evalLoader = random.sample(list(trainLoader), sample_size)
+    trainsize = len(trainLoader)
+    sample_size = min(sample_size, trainsize)
+    trainsize *= trainLoader.batch_size
+    sample_size *= trainLoader.batch_size
+    indices = torch.randperm(trainsize)[:sample_size].tolist()
+    sampler = SubsetRandomSampler(indices)
+    evalLoader = DataLoader(
+        trainLoader.dataset, batch_size=trainLoader.batch_size, sampler=sampler
+    )
     with torch.no_grad():
-        for data in tqdm(evalLoader, desc="Evaluating on trainset..."):
+        for data in tqdm(evalLoader, desc="Batch evaluation on trainset"):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
             outputs = model.forward(inputs)
             predicted = torch.max(outputs.data, 1)[1]
@@ -46,7 +54,7 @@ def eval_model_valid(
 ):
     y_true, y_pred = [], []
     with torch.no_grad():
-        for data in tqdm(validLoader, desc="Evaluating on validset..."):
+        for data in tqdm(validLoader, desc="Batch evaluation on validset"):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
             outputs = model.forward(inputs)
             predicted = torch.max(outputs.data, 1)[1]
@@ -74,7 +82,7 @@ def eval_model_test(
     model = Net(backbone, len(classes), False, weight_path=f"{log_dir}/save.pt")
     y_true, y_pred = [], []
     with torch.no_grad():
-        for data in tqdm(testLoader, desc="Evaluating on testset..."):
+        for data in tqdm(testLoader, desc="Batch evaluation on testset"):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
             outputs = model.forward(inputs)
             predicted = torch.max(outputs.data, 1)[1]
@@ -319,4 +327,5 @@ if __name__ == "__main__":
         backbone=args.backbone,
         focal_loss=args.focalloss,
         full_finetune=args.fullfinetune,
+        epoch_num=1,  # 1 epoch only for test
     )
