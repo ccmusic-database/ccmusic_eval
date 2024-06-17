@@ -1,4 +1,5 @@
 import csv
+import random
 import argparse
 import warnings
 import torch.utils.data
@@ -20,8 +21,9 @@ def eval_model_train(
     label_col: str,
 ):
     y_true, y_pred = [], []
+    evalLoader = random.sample(list(trainLoader), len(trainLoader) // 8)
     with torch.no_grad():
-        for data in tqdm(trainLoader, desc="Evaluating on trainset..."):
+        for data in tqdm(evalLoader, desc="Evaluating on trainset..."):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
             outputs = model.forward(inputs)
             predicted = torch.max(outputs.data, 1)[1]
