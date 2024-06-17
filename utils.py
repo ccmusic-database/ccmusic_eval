@@ -1,3 +1,4 @@
+import csv
 import torch
 import zipfile
 import requests
@@ -62,3 +63,9 @@ def to_cuda(x):
             return x.cuda()
 
     return x
+
+
+def save_to_csv(csv_file: str, row: list):
+    with open(csv_file, "a", newline="", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(row)

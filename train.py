@@ -3,57 +3,40 @@ import argparse
 import warnings
 import torch.utils.data
 import torch.optim as optim
+import pandas as pd
 from datetime import datetime
-from torch.utils.data import SubsetRandomSampler
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from plot import np, plot_acc, plot_loss, plot_confusion_matrix
 from data import DataLoader, prepare_data, load_data
-from utils import torch, tqdm, to_cuda
+from utils import torch, tqdm, to_cuda, save_to_csv
 from focalLoss import FocalLoss
 from model import os, nn, Net
 
 
-def eval_model_train(
+def eval_model(
     model: Net,
     trainLoader: DataLoader,
-    tra_acc_list: list,
+    validLoader: DataLoader,
     data_col: str,
     label_col: str,
-    sample_size: int,
+    learning_rate: float,
+    best_valid_acc: float,
+    loss_list: list,
+    log_dir: str,
 ):
     y_true, y_pred = [], []
-    trainsize = len(trainLoader)
-    sample_size = min(sample_size, trainsize)
-    trainsize *= trainLoader.batch_size
-    sample_size *= trainLoader.batch_size
-    indices = torch.randperm(trainsize)[:sample_size].tolist()
-    sampler = SubsetRandomSampler(indices)
-    evalLoader = DataLoader(
-        trainLoader.dataset, batch_size=trainLoader.batch_size, sampler=sampler
-    )
     with torch.no_grad():
-        for data in tqdm(evalLoader, desc="Batch evaluation on trainset"):
+        for data in tqdm(trainLoader, desc="Batch evaluation on trainset"):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
             outputs = model.forward(inputs)
             predicted = torch.max(outputs.data, 1)[1]
             y_true.extend(labels.tolist())
             y_pred.extend(predicted.tolist())
 
-    acc = 100.0 * accuracy_score(y_true, y_pred)
-    print(f"Training accuracy : {round(acc, 2)}%")
-    tra_acc_list.append(acc)
+        train_acc = 100.0 * accuracy_score(y_true, y_pred)
+        print(f"Training accuracy : {round(train_acc, 2)}%")
 
-
-def eval_model_valid(
-    model: Net,
-    validLoader: DataLoader,
-    val_acc_list: list,
-    data_col: str,
-    label_col: str,
-    log_dir: str,
-):
-    y_true, y_pred = [], []
-    with torch.no_grad():
+        y_true, y_pred = [], []
         for data in tqdm(validLoader, desc="Batch evaluation on validset"):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
             outputs = model.forward(inputs)
@@ -61,17 +44,22 @@ def eval_model_valid(
             y_true.extend(labels.tolist())
             y_pred.extend(predicted.tolist())
 
-    acc = 100.0 * accuracy_score(y_true, y_pred)
-    print(f"Validation accuracy : {round(acc, 2)}%")
+        valid_acc = 100.0 * accuracy_score(y_true, y_pred)
+        print(f"Validation accuracy : {round(valid_acc, 2)}%")
 
-    if (not val_acc_list) or (val_acc_list and acc > val_acc_list[-1]):
-        torch.save(model.state_dict(), f"{log_dir}/save.pt")
-        print("Weights were saved.")
+    save_to_csv(log_dir + "/acc.csv", [train_acc, valid_acc, learning_rate])
+    with open(log_dir + "/loss.csv", "a", newline="", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+        for loss in loss_list:
+            writer.writerow([loss])
 
-    val_acc_list.append(acc)
+    if valid_acc > best_valid_acc:
+        best_valid_acc = valid_acc
+        torch.save(model.state_dict(), log_dir + "/save.pt")
+        print("Model saved.")
 
 
-def eval_model_test(
+def test_model(
     backbone: str,
     testLoader: DataLoader,
     classes: list,
@@ -137,13 +125,8 @@ Best eval acc  : {round(best_eval_acc, 2)}%
 
 def save_history(
     log_dir: str,
-    tra_acc_list: list,
-    val_acc_list: list,
-    loss_list: list,
-    lr_list: list,
+    testLoader: DataLoader,
     classes: list,
-    cm: np.ndarray,
-    cls_report: str,
     start_time: str,
     finish_time: str,
     dataset: str,
@@ -153,18 +136,14 @@ def save_history(
     focal_loss: str,
     full_finetune: bool,
 ):
-    acc_len = len(tra_acc_list)
-    with open(f"{log_dir}/acc.csv", "w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(["tra_acc_list", "val_acc_list", "lr_list"])
-        for i in range(acc_len):
-            writer.writerow([tra_acc_list[i], val_acc_list[i], lr_list[i]])
+    cls_report, cm = test_model(
+        backbone, testLoader, classes, data_col, label_col, log_dir
+    )
 
-    with open(f"{log_dir}/loss.csv", "w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(["loss_list"])
-        for loss in loss_list:
-            writer.writerow([loss])
+    acc_list = pd.read_csv(log_dir + "/acc.csv")
+    tra_acc_list = acc_list["tra_acc_list"].tolist()
+    val_acc_list = acc_list["val_acc_list"].tolist()
+    loss_list = pd.read_csv(log_dir + "/loss.csv")["loss_list"].tolist()
 
     plot_acc(tra_acc_list, val_acc_list, log_dir)
     plot_loss(loss_list, log_dir)
@@ -238,16 +217,19 @@ def train(
                 if isinstance(v, torch.Tensor):
                     state[k] = v.cuda()
 
-    # train
+    # start training
     start_time = datetime.now()
     log_dir = f"./logs/{start_time.strftime('%Y-%m-%d_%H-%M-%S')}"
     os.makedirs(log_dir, exist_ok=True)
     print(f"Start tuning {backbone} at {start_time.strftime('%Y-%m-%d %H:%M:%S')} ...")
-    tra_acc_list, val_acc_list, loss_list, lr_list = [], [], [], []
+    save_to_csv(log_dir + "/acc.csv", ["tra_acc_list", "val_acc_list", "lr_list"])
+    save_to_csv(log_dir + "/loss.csv", ["loss_list"])
+
+    best_eval_acc = 0.0
     for epoch in range(epoch_num):  # loop over the dataset multiple times
         lr: float = optimizer.param_groups[0]["lr"]
-        lr_list.append(lr)
         running_loss = 0.0
+        loss_list = []
         with tqdm(total=len(traLoader), unit="batch") as pbar:
             for i, data in enumerate(traLoader, 0):
                 # get the inputs
@@ -277,27 +259,25 @@ def train(
                 running_loss = 0.0
                 pbar.update(1)
 
-        eval_model_train(
-            model, traLoader, tra_acc_list, data_col, label_col, len(valLoader)
+        eval_model(
+            model,
+            traLoader,
+            valLoader,
+            data_col,
+            label_col,
+            lr,
+            best_eval_acc,
+            loss_list,
+            log_dir,
         )
-        eval_model_valid(model, valLoader, val_acc_list, data_col, label_col, log_dir)
         scheduler.step(loss.item())
 
-    finish_time = datetime.now()
-    cls_report, cm = eval_model_test(
-        backbone, tesLoader, classes, data_col, label_col, log_dir
-    )
     save_history(
         log_dir,
-        tra_acc_list,
-        val_acc_list,
-        loss_list,
-        lr_list,
+        tesLoader,
         classes,
-        cm,
-        cls_report,
         start_time,
-        finish_time,
+        datetime.now(),
         f"{dataset} - {subset}",
         data_col,
         label_col,
@@ -315,7 +295,7 @@ if __name__ == "__main__":
     parser.add_argument("--data", type=str, default="cqt")
     parser.add_argument("--label", type=str, default="singing_method")
     parser.add_argument("--backbone", type=str, default="squeezenet1_1")
-    parser.add_argument("--focalloss", type=bool, default=False)
+    parser.add_argument("--focalloss", type=bool, default=True)
     parser.add_argument("--fullfinetune", type=bool, default=False)
     args = parser.parse_args()
 
@@ -327,5 +307,5 @@ if __name__ == "__main__":
         backbone=args.backbone,
         focal_loss=args.focalloss,
         full_finetune=args.fullfinetune,
-        epoch_num=1,  # 1 epoch only for test
+        epoch_num=2,  # 2 epochs only for test
     )

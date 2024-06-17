@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from functools import partial
 from torch.utils.data import DataLoader
 from modelscope.msdatasets import MsDataset
@@ -27,9 +28,9 @@ def prepare_data(dataset: str, subset: str, label_col: str, focal_loss: bool):
     print("Preparing data...")
     ds = MsDataset.load(dataset, subset_name=subset)
     try:
-        classes = ds["train"]._hf_ds.features[label_col].names
+        classes = ds["test"]._hf_ds.features[label_col].names
     except AttributeError:
-        classes = ds["train"].features[label_col].names
+        classes = ds["test"].features[label_col].names
     except KeyError:
         print("Ensure the selected dataset has splits: train, validation and test")
         exit()
@@ -38,7 +39,7 @@ def prepare_data(dataset: str, subset: str, label_col: str, focal_loss: bool):
 
     if focal_loss:
         each_nums = {k: 0 for k in classes}
-        for item in ds["train"]:
+        for item in tqdm(ds["train"], desc="Statistics by category for focal loss..."):
             each_nums[classes[item[label_col]]] += 1
 
         num_samples = list(each_nums.values())
