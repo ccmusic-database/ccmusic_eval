@@ -104,11 +104,11 @@ def save_log(
     full_finetune: bool,
 ):
     log = f"""
-Class num      : {len(classes)}
 Backbone       : {backbone}
 Dataset        : {dataset}
 Data column    : {data_col}
 Label column   : {label_col}
+Class num      : {len(classes)}
 Start time     : {start_time.strftime('%Y-%m-%d %H:%M:%S')}
 Finish time    : {finish_time.strftime('%Y-%m-%d %H:%M:%S')}
 Time cost      : {(finish_time - start_time).seconds}s
