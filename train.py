@@ -58,6 +58,8 @@ def eval_model(
         torch.save(model.state_dict(), log_dir + "/save.pt")
         print("Model saved.")
 
+    return best_valid_acc
+
 
 def test_model(
     backbone: str,
@@ -259,7 +261,7 @@ def train(
                 running_loss = 0.0
                 pbar.update(1)
 
-        eval_model(
+        best_eval_acc = eval_model(
             model,
             traLoader,
             valLoader,
