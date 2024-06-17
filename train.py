@@ -19,9 +19,10 @@ def eval_model_train(
     tra_acc_list: list,
     data_col: str,
     label_col: str,
+    sample_size: int,
 ):
     y_true, y_pred = [], []
-    evalLoader = random.sample(list(trainLoader), len(trainLoader) // 8)
+    evalLoader = random.sample(list(trainLoader), sample_size)
     with torch.no_grad():
         for data in tqdm(evalLoader, desc="Evaluating on trainset..."):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
@@ -268,7 +269,9 @@ def train(
                 running_loss = 0.0
                 pbar.update(1)
 
-        eval_model_train(model, traLoader, tra_acc_list, data_col, label_col)
+        eval_model_train(
+            model, traLoader, tra_acc_list, data_col, label_col, len(valLoader)
+        )
         eval_model_valid(model, valLoader, val_acc_list, data_col, label_col, log_dir)
         scheduler.step(loss.item())
 
