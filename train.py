@@ -231,7 +231,7 @@ def train(
     start_time = datetime.now()
     log_dir = f"./logs/{start_time.strftime('%Y-%m-%d_%H-%M-%S')}"
     os.makedirs(log_dir, exist_ok=True)
-    print(f"Start tuning {backbone} at {start_time} ...")
+    print(f"Start tuning {backbone} at {start_time.strftime('%Y-%m-%d %H:%M:%S')} ...")
     tra_acc_list, val_acc_list, loss_list, lr_list = [], [], [], []
     for epoch in range(epoch_num):  # loop over the dataset multiple times
         lr: float = optimizer.param_groups[0]["lr"]
