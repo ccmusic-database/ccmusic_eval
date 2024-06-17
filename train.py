@@ -21,7 +21,7 @@ def eval_model_train(
 ):
     y_true, y_pred = [], []
     with torch.no_grad():
-        for data in trainLoader:
+        for data in tqdm(trainLoader, desc="Evaluating on trainset..."):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
             outputs = model.forward(inputs)
             predicted = torch.max(outputs.data, 1)[1]
@@ -43,7 +43,7 @@ def eval_model_valid(
 ):
     y_true, y_pred = [], []
     with torch.no_grad():
-        for data in validLoader:
+        for data in tqdm(validLoader, desc="Evaluating on validset..."):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
             outputs = model.forward(inputs)
             predicted = torch.max(outputs.data, 1)[1]
@@ -71,7 +71,7 @@ def eval_model_test(
     model = Net(backbone, len(classes), False, weight_path=f"{log_dir}/save.pt")
     y_true, y_pred = [], []
     with torch.no_grad():
-        for data in testLoader:
+        for data in tqdm(testLoader, desc="Evaluating on testset..."):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
             outputs = model.forward(inputs)
             predicted = torch.max(outputs.data, 1)[1]
