@@ -6,6 +6,17 @@ from modelscope.msdatasets import MsDataset
 from utils import download
 
 
+class FocalLoss(nn.CrossEntropyLoss):
+    def __init__(self, sample_sizes: list):
+        super(FocalLoss, self).__init__()
+        weights = torch.tensor(
+            [1.0 / size for size in sample_sizes], dtype=torch.float32
+        )
+        full_weights = torch.zeros(1000)
+        full_weights[: len(sample_sizes)] = weights / weights.sum()
+        self.weight = full_weights
+
+
 class Net:
     def __init__(
         self,

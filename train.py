@@ -9,8 +9,7 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 from plot import np, plot_acc, plot_loss, plot_confusion_matrix
 from data import DataLoader, prepare_data, load_data
 from utils import torch, tqdm, to_cuda, save_to_csv
-from focalLoss import FocalLoss
-from model import os, nn, Net
+from model import os, nn, Net, FocalLoss
 
 
 def eval_model(
@@ -27,9 +26,10 @@ def eval_model(
     y_true, y_pred = [], []
     with torch.no_grad():
         for data in tqdm(trainLoader, desc="Batch evaluation on trainset"):
-            inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
+            inputs = to_cuda(data[data_col])
+            labels: torch.Tensor = to_cuda(data[label_col])
             outputs = model.forward(inputs)
-            predicted = torch.max(outputs.data, 1)[1]
+            predicted: torch.Tensor = torch.max(outputs.data, 1)[1]
             y_true.extend(labels.tolist())
             y_pred.extend(predicted.tolist())
 
@@ -73,9 +73,10 @@ def test_model(
     y_true, y_pred = [], []
     with torch.no_grad():
         for data in tqdm(testLoader, desc="Batch evaluation on testset"):
-            inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
+            inputs = to_cuda(data[data_col])
+            labels: torch.Tensor = to_cuda(data[label_col])
             outputs = model.forward(inputs)
-            predicted = torch.max(outputs.data, 1)[1]
+            predicted: torch.Tensor = torch.max(outputs.data, 1)[1]
             y_true.extend(labels.tolist())
             y_pred.extend(predicted.tolist())
 
