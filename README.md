@@ -1,10 +1,10 @@
 # Evaluation Framework for CCMusic Database MSA
-[![Python application](https://github.com/monet-joe/ccmusic_eval/actions/workflows/python-app.yml/badge.svg?branch=msa)](https://github.com/monet-joe/ccmusic_eval/actions/workflows/python-app.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/monet-joe/ccmusic_eval/blob/msa/LICENSE)
+[![Python application](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml/badge.svg)](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/monetjoe/ccmusic_eval/blob/msa/LICENSE)
 
 ## Download
 ```bash
-git clone -b msa git@github.com:monet-joe/ccmusic_eval.git
+git clone -b msa git@github.com:monetjoe/ccmusic_eval.git
 cd ccmusic_eval
 ```
 
@@ -18,15 +18,14 @@ python pip.py
 
 ## Usage
 ### Evaluation
-4. run eval.py to evaluate and plot results
+Run `eval.py` to evaluate and plot results
 
 ### Prerequisites Steps
-0. Download audios from https://www.modelscope.cn/api/v1/datasets/ccmusic/song_structure/repo?Revision=master&FilePath=data%2Faudio.zip to './MSA_dataset/audio'
-1. Download labels from https://www.modelscope.cn/api/v1/datasets/ccmusic/song_structure/repo?Revision=master&FilePath=data%2Flabel.zip to './MSA_dataset/Annotations'
-2. run beat_track.py first to get beat information, saved to './MSA_dataset/references'
-3. run process.py to perform structure analysis using beat information from './MSA_dataset/references' to './MSA_dataset/estimations'
-4. run txt_to_lab.py to transform .txt to .lab as mir_eval need .lab
-
+1. Download audios from <https://www.modelscope.cn/api/v1/datasets/ccmusic-database/song_structure/repo?Revision=master&FilePath=data%2Faudio.zip> to `./MSA_dataset/audio`
+2. Download labels from <https://www.modelscope.cn/api/v1/datasets/ccmusic-database/song_structure/repo?Revision=master&FilePath=data%2Flabel.zip> to `./MSA_dataset/Annotations`
+3. Run `beat_track.py` first to get beat information, saved to `./MSA_dataset/references`
+4. Run `process.py` to perform structure analysis using beat information from `./MSA_dataset/references` to `./MSA_dataset/estimations`
+5. Run `txt_to_lab.py` to transform `.txt` to `.lab` as `mir_eval` need `.lab`
 
 ## Cite
 ```bibtex
