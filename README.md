@@ -1,12 +1,12 @@
 # Evaluation Framework for CCMusic Database Classification Tasks
-[![Python application](https://github.com/monet-joe/ccmusic_eval/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/monet-joe/ccmusic_eval/actions/workflows/python-app.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/monet-joe/ccmusic_eval/blob/main/LICENSE)
+[![Python application](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/monetjoe/ccmusic_eval/blob/main/LICENSE)
 
 Classify spectrograms by fine-tuned pre-trained CNN models.
 
 ## Download
 ```bash
-git clone git@github.com:monet-joe/ccmusic_eval.git
+git clone git@github.com:monetjoe/ccmusic_eval.git
 cd ccmusic_eval
 ```
 
@@ -17,8 +17,14 @@ conda activate cv
 pip install -r requirements.txt
 ```
 
+## Usage
+```bash
+python train.py --subset eval --data cqt --label singing_method --backbone squeezenet1_1 --focalloss True --fullfinetune False
+```
+
 ## Supported backbones
-<https://www.modelscope.cn/datasets/monetjoe/cv_backbones/dataPeview>  
+<a href="https://www.modelscope.cn/datasets/monetjoe/cv_backbones/dataPeview">Mirror 1</a><br>
+<a href="https://huggingface.co/datasets/monetjoe/cv_backbones">Mirror 2</a>
 
 ## Cite
 ```bibtex

@@ -47,15 +47,15 @@ def eval_model(
         valid_acc = 100.0 * accuracy_score(y_true, y_pred)
         print(f"Validation accuracy : {round(valid_acc, 2)}%")
 
-    save_to_csv(log_dir + "/acc.csv", [train_acc, valid_acc, learning_rate])
-    with open(log_dir + "/loss.csv", "a", newline="", encoding="utf-8") as csvfile:
+    save_to_csv(f"{log_dir}/acc.csv", [train_acc, valid_acc, learning_rate])
+    with open(f"{log_dir}/loss.csv", "a", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
         for loss in loss_list:
             writer.writerow([loss])
 
     if valid_acc > best_valid_acc:
         best_valid_acc = valid_acc
-        torch.save(model.state_dict(), log_dir + "/save.pt")
+        torch.save(model.state_dict(), f"{log_dir}/save.pt")
         print("Model saved.")
 
     return best_valid_acc
@@ -143,10 +143,10 @@ def save_history(
         backbone, testLoader, classes, data_col, label_col, log_dir
     )
 
-    acc_list = pd.read_csv(log_dir + "/acc.csv")
+    acc_list = pd.read_csv(f"{log_dir}/acc.csv")
     tra_acc_list = acc_list["tra_acc_list"].tolist()
     val_acc_list = acc_list["val_acc_list"].tolist()
-    loss_list = pd.read_csv(log_dir + "/loss.csv")["loss_list"].tolist()
+    loss_list = pd.read_csv(f"{log_dir}/loss.csv")["loss_list"].tolist()
 
     plot_acc(tra_acc_list, val_acc_list, log_dir)
     plot_loss(loss_list, log_dir)
@@ -225,8 +225,8 @@ def train(
     log_dir = f"./logs/{start_time.strftime('%Y-%m-%d_%H-%M-%S')}"
     os.makedirs(log_dir, exist_ok=True)
     print(f"Start tuning {backbone} at {start_time.strftime('%Y-%m-%d %H:%M:%S')} ...")
-    save_to_csv(log_dir + "/acc.csv", ["tra_acc_list", "val_acc_list", "lr_list"])
-    save_to_csv(log_dir + "/loss.csv", ["loss_list"])
+    save_to_csv(f"{log_dir}/acc.csv", ["tra_acc_list", "val_acc_list", "lr_list"])
+    save_to_csv(f"{log_dir}/loss.csv", ["loss_list"])
 
     best_eval_acc = 0.0
     for epoch in range(epoch_num):  # loop over the dataset multiple times
@@ -293,7 +293,11 @@ def train(
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     parser = argparse.ArgumentParser(description="train")
-    parser.add_argument("--dataset", type=str, default="ccmusic/chest_falsetto")
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="ccmusic-database/chest_falsetto",
+    )
     parser.add_argument("--subset", type=str, default="eval")
     parser.add_argument("--data", type=str, default="cqt")
     parser.add_argument("--label", type=str, default="singing_method")

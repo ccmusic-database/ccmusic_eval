@@ -67,7 +67,11 @@ class Net:
         exit()
 
     def _model_info(self, backbone: str):
-        backbone_list = MsDataset.load("monetjoe/cv_backbones", split="train")
+        backbone_list = MsDataset.load(
+            "monetjoe/cv_backbones",
+            split="train",
+            cache_dir="./__pycache__",
+        )
         backbone_info = self._get_backbone(backbone, backbone_list)
 
         return (
@@ -76,8 +80,7 @@ class Net:
             int(backbone_info["input_size"]),
         )
 
-    def _download_model(self, weight_url: str):
-        model_dir = "./model"
+    def _download_model(self, weight_url: str, model_dir="./model"):
         weight_path = f'{model_dir}/{weight_url.split("/")[-1]}'
         os.makedirs(model_dir, exist_ok=True)
 
