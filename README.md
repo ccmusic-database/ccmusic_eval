@@ -4,6 +4,8 @@
 
 Classify spectrograms by fine-tuned pre-trained CNN models.
 
+<img src="./.github/eval.png">
+
 ## Download
 ```bash
 git clone git@github.com:monetjoe/ccmusic_eval.git
