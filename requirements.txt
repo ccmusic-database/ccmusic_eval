@@ -1,8 +1,6 @@
-scikit-learn
 librosa
 matplotlib
 pandas
 tqdm
-autopep8
-pillow==10.3
-modelscope==1.15
+modelscope==1.16
+huggingface_hub==0.23.2
