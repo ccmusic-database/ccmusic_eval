@@ -26,7 +26,12 @@ def transform(example_batch, data_column: str, label_column: str, img_size: int)
 
 def prepare_data(dataset: str, subset: str, label_col: str, focal_loss: bool):
     print("Preparing data...")
-    ds = MsDataset.load(dataset, subset_name=subset)
+    ds = MsDataset.load(
+        dataset,
+        subset_name=subset,
+        cache_dir="./__pycache__",
+        download_mode="force_redownload",
+    )
     try:
         classes = ds["test"]._hf_ds.features[label_col].names
     except AttributeError:

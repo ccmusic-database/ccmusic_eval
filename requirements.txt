@@ -4,7 +4,6 @@ matplotlib
 pandas
 tqdm
 autopep8
-datasets
 pillow==10.3
-modelscope
+modelscope==1.15
 transformers
