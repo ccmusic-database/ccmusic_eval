@@ -6,4 +6,3 @@ tqdm
 autopep8
 pillow==10.3
 modelscope==1.15
-transformers

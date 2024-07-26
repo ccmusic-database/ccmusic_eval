@@ -30,7 +30,6 @@ def prepare_data(dataset: str, subset: str, label_col: str, focal_loss: bool):
         dataset,
         subset_name=subset,
         cache_dir="./__pycache__",
-        download_mode="force_redownload",
     )
     try:
         classes = ds["test"]._hf_ds.features[label_col].names
