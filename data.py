@@ -1,3 +1,4 @@
+import os
 from tqdm import tqdm
 from functools import partial
 from torch.utils.data import DataLoader
@@ -29,7 +30,7 @@ def prepare_data(dataset: str, subset: str, label_col: str, focal_loss: bool):
     ds = MsDataset.load(
         dataset,
         subset_name=subset,
-        cache_dir="./__pycache__",
+        cache_dir=f"{os.getcwd()}/__pycache__",
     )
     try:
         classes = ds["test"]._hf_ds.features[label_col].names

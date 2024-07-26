@@ -70,7 +70,7 @@ class Net:
         backbone_list = MsDataset.load(
             "monetjoe/cv_backbones",
             split="train",
-            cache_dir="./__pycache__",
+            cache_dir=f"{os.getcwd()}/__pycache__",
         )
         backbone_info = self._get_backbone(backbone, backbone_list)
 
