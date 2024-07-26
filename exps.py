@@ -2,7 +2,6 @@ import warnings
 from train import train
 
 SPECTS = ["mel", "cqt", "chroma"]
-SUBSETS = ["eval", "eval2"]  # 8:2 vs 6:4
 
 
 def erhu_exp(
@@ -18,17 +17,16 @@ def erhu_exp(
 ):
     for bb in backbones:
         for spect in SPECTS:
-            for subset in SUBSETS:
-                train(
-                    dataset="ccmusic-database/erhu_playing_tech",
-                    subset=subset,
-                    data_col=spect,
-                    label_col="label",
-                    backbone=bb,
-                    focal_loss=True,
-                    full_finetune=True,
-                    epoch_num=40,
-                )
+            train(
+                dataset="ccmusic-database/erhu_playing_tech",
+                subset="eval",
+                data_col=spect,
+                label_col="label",
+                backbone=bb,
+                focal_loss=True,
+                full_finetune=True,
+                epoch_num=40,
+            )
 
 
 def bel_exp(
@@ -44,17 +42,16 @@ def bel_exp(
 ):
     for bb in backbones:
         for spect in SPECTS:
-            for subset in SUBSETS:
-                train(
-                    dataset="ccmusic-database/bel_canto",
-                    subset=subset,
-                    data_col=spect,
-                    label_col="label",
-                    backbone=bb,
-                    focal_loss=True,
-                    full_finetune=True,
-                    epoch_num=40,
-                )
+            train(
+                dataset="ccmusic-database/bel_canto",
+                subset="eval",
+                data_col=spect,
+                label_col="label",
+                backbone=bb,
+                focal_loss=True,
+                full_finetune=True,
+                epoch_num=40,
+            )
 
 
 def chest_exp(
@@ -70,21 +67,20 @@ def chest_exp(
 ):
     for bb in backbones:
         for spect in SPECTS:
-            for subset in SUBSETS:
-                train(
-                    dataset="ccmusic-database/chest_falsetto",
-                    subset=subset,
-                    data_col=spect,
-                    label_col="label",
-                    backbone=bb,
-                    focal_loss=True,
-                    full_finetune=True,
-                    epoch_num=40,
-                )
+            train(
+                dataset="ccmusic-database/chest_falsetto",
+                subset="eval",
+                data_col=spect,
+                label_col="label",
+                backbone=bb,
+                focal_loss=True,
+                full_finetune=True,
+                epoch_num=40,
+            )
 
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
+    chest_exp()
     erhu_exp()
     bel_exp()
-    chest_exp()
