@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ### Pip only
 ```bash
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-pip install torch torchvision torchaudio -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip datasets install torch torchvision torchaudio -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 ## Usage
