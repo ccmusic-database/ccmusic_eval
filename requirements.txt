@@ -2,5 +2,5 @@ librosa
 matplotlib
 pandas
 tqdm
-modelscope==1.16
+modelscope==1.15
 huggingface_hub==0.23.2
