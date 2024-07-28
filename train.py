@@ -219,7 +219,7 @@ def train(
 
     # start training
     start_time = datetime.now()
-    log_dir = f"./logs/{backbone}_{data_col}_{start_time.strftime('%Y-%m-%d_%H-%M-%S')}"
+    log_dir = f"./logs/{dataset.replace('/', '_')}/{backbone}_{data_col}_{start_time.strftime('%Y-%m-%d_%H-%M-%S')}"
     os.makedirs(log_dir, exist_ok=True)
     print(f"Start tuning {backbone} at {start_time.strftime('%Y-%m-%d %H:%M:%S')}...")
     save_to_csv(f"{log_dir}/acc.csv", ["tra_acc_list", "val_acc_list", "lr_list"])
