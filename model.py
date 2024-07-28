@@ -71,7 +71,6 @@ class Net:
             "monetjoe/cv_backbones",
             split="v1",
             cache_dir=f"{os.getcwd()}/__pycache__",
-            download_mode="force_redownload",
         )
         backbone_info = self._get_backbone(backbone, backbone_list)
 
@@ -108,6 +107,7 @@ class Net:
                 nn.ReLU(inplace=True),
                 nn.Linear(l1, cls_num),
             )
+
         else:
             return nn.Sequential(
                 nn.Dropout(),
@@ -136,6 +136,7 @@ class Net:
                         print(
                             f"{name}(Linear): {self.output_size} -> {module.out_features}"
                         )
+
                     return True
 
                 if isinstance(module, torch.nn.Conv2d):
@@ -144,6 +145,7 @@ class Net:
                         print(
                             f"{name}(Conv2d): {self.output_size} -> {module.out_channels}"
                         )
+
                     return False
 
         return False
@@ -186,12 +188,14 @@ class Net:
 
         if self.type == "googlenet" and self.training:
             return self.model(x)[0]
+
         else:
             return self.model(x)
 
     def parameters(self):
         if self.full_finetune:
             return self.model.parameters()
+
         else:
             return self.classifier.parameters()
 
