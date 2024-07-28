@@ -300,7 +300,7 @@ if __name__ == "__main__":
     parser.add_argument("--label", type=str, default="singing_method")
     parser.add_argument("--backbone", type=str, default="squeezenet1_1")
     parser.add_argument("--imgnet", type=str, default="v1")
-    parser.add_argument("--mode", type=int, default=2)
+    parser.add_argument("--mode", type=int, default=1)
     parser.add_argument("--bsz", type=int, default=4)
     parser.add_argument("--eps", type=int, default=2)  # 40
     parser.add_argument("--fl", type=bool, default=True)

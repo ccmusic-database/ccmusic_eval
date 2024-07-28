@@ -109,7 +109,7 @@ def load_data(
             img_size=input_size,
         )
     )
-    num_workers = os.cpu_count() - 1
+    num_workers = os.cpu_count() // 2
     traLoader = DataLoader(
         trainset,
         batch_size=bs,
