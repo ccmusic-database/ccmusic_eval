@@ -20,27 +20,31 @@ class Net:
         self,
         backbone: str,
         cls_num: int,
-        full_finetune: bool,
+        train_mode: int,
+        imgnet_ver="v1",
         weight_path="",
     ):
         if not hasattr(models, backbone):
             print("Unsupported model.")
             exit()
 
+        self.imgnet_ver = imgnet_ver
         self.output_size = 512
         self.training = weight_path == ""
-        self.full_finetune = full_finetune
+        self.full_finetune = train_mode != 1
         self.type, self.weight_url, self.input_size = self._model_info(backbone)
-        self.model = eval("models.%s()" % backbone)
+        self.model: torch.nn.Module = eval("models.%s()" % backbone)
         linear_output = self._set_outsize()
         if self.training:
-            weight_path = self._download_model(self.weight_url)
-            checkpoint = (
-                torch.load(weight_path)
-                if torch.cuda.is_available()
-                else torch.load(weight_path, map_location="cpu")
-            )
-            self.model.load_state_dict(checkpoint, False)
+            if train_mode != 2:
+                weight_path = self._download_model(self.weight_url)
+                checkpoint = (
+                    torch.load(weight_path)
+                    if torch.cuda.is_available()
+                    else torch.load(weight_path, map_location="cpu")
+                )
+                self.model.load_state_dict(checkpoint, False)
+
             for parma in self.model.parameters():
                 parma.requires_grad = self.full_finetune
 
@@ -68,7 +72,7 @@ class Net:
     def _model_info(self, backbone: str):
         backbone_list = MsDataset.load(
             "monetjoe/cv_backbones",
-            split="v1",
+            split=self.imgnet_ver,
             cache_dir=f"{os.getcwd()}/__pycache__",
         )
         backbone_info = self._get_backbone(backbone, backbone_list)

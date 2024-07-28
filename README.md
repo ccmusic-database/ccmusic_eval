@@ -28,12 +28,21 @@ pip install torch torchvision torchaudio -i https://pypi.tuna.tsinghua.edu.cn/si
 
 ## Usage
 ```bash
-python train.py --subset eval --data cqt --label singing_method --backbone squeezenet1_1 --focalloss True --fullfinetune False
+python train.py --dataset ccmusic-database/chest_falsetto --subset eval --data cqt --label singing_method --backbone squeezenet1_1 --fl True --mode 0
 ```
-
-## Supported backbones
-<a href="https://www.modelscope.cn/datasets/monetjoe/cv_backbones/dataPeview">Mirror 1</a><br>
-<a href="https://huggingface.co/datasets/monetjoe/cv_backbones">Mirror 2</a>
+### Help
+| Args       | Notes                                                                                                            | Options                                                                                    | Type   |
+| :--------- | :--------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- | :----- |
+| --dataset  | The dataset on [ModelScope](https://www.modelscope.cn/organization/ccmusic-database?tab=dataset) to be evaluated | For examples: ccmusic-database/chest_falsetto, ccmusic-database/bel_canto                  | string |
+| --subset   | The subset of the dataset                                                                                        | For examples: default, eval                                                                | string |
+| --data     | Input data colum of the dataset                                                                                  | For examples: mel, cqt, chroma                                                             | string |
+| --label    | Label colum of the dataset                                                                                       | For examples: label, singing_method, gender                                                | string |
+| --backbone | Select a CV backbone to train                                                                                    | [Supported backbones](https://www.modelscope.cn/datasets/monetjoe/cv_backbones/dataPeview) | string |
+| --imgnet   | ImageNet version the backbone was pretrained on                                                                  | v1, v2                                                                                     | string |
+| --mode     | Training mode                                                                                                    | 0=full_finetune, 1=linear_probe, 2=no_pretrain                                             | int    |
+| --bsz      | Batch size                                                                                                       | For examples: 1, 2, 4, 8, 16, 32, 64, 128..., default is 4                                 | int    |
+| --eps      | Epoch number                                                                                                     | Default is 40                                                                              | int    |
+| --fl       | Whether to use focal loss                                                                                        | True, False                                                                                | bool   |
 
 ## Cite
 ```bibtex

@@ -61,8 +61,7 @@ def load_data(
     input_size: int,
     has_bn: bool,
     shuffle=True,
-    batch_size=1,  # 4
-    num_workers=1,  # 2
+    batch_size=4,
 ):
     print("Loadeding data...")
     bs = batch_size
@@ -110,7 +109,7 @@ def load_data(
             img_size=input_size,
         )
     )
-    # Data loaders
+    num_workers = os.cpu_count() - 1
     traLoader = DataLoader(
         trainset,
         batch_size=bs,

@@ -11,6 +11,8 @@ from data import DataLoader, prepare_data, load_data
 from utils import torch, tqdm, to_cuda, save_to_csv
 from model import os, nn, Net, FocalLoss
 
+TRAIN_MODE = ["full_finetune", "linear probe", "no_pretrain"]
+
 
 def eval_model(
     model: Net,
@@ -99,18 +101,20 @@ def save_log(
     focal_loss: str,
     best_train_acc: float,
     best_eval_acc: float,
-    full_finetune: bool,
+    mode: int,
+    batch_size: int,
 ):
     log = f"""
 Backbone       : {backbone}
+Training mode  : {TRAIN_MODE[mode]}
 Dataset        : {dataset}
 Data column    : {data_col}
 Label column   : {label_col}
 Class num      : {len(classes)}
+Batch size     : {batch_size}
 Start time     : {start_time.strftime('%Y-%m-%d %H:%M:%S')}
 Finish time    : {finish_time.strftime('%Y-%m-%d %H:%M:%S')}
 Time cost      : {(finish_time - start_time).seconds}s
-Full finetune  : {full_finetune}
 Use focal loss : {focal_loss}
 Best train acc : {round(best_train_acc, 2)}%
 Best eval acc  : {round(best_eval_acc, 2)}%
@@ -135,7 +139,8 @@ def save_history(
     label_col: str,
     backbone: str,
     focal_loss: str,
-    full_finetune: bool,
+    train_mode: int,
+    batch_size: int,
 ):
     cls_report, cm = test_model(
         backbone,
@@ -165,7 +170,8 @@ def save_history(
         focal_loss,
         max(tra_acc_list),
         max(val_acc_list),
-        full_finetune,
+        train_mode,
+        batch_size,
     )
 
 
@@ -175,16 +181,18 @@ def train(
     data_col: str,
     label_col: str,
     backbone: str,
+    train_mode: int,
     focal_loss: bool,
-    full_finetune: bool,
-    epoch_num=40,
+    imgnet_ver="v1",
+    batch_size=4,
+    epochs=40,
     iteration=10,
     lr=0.001,
 ):
     # prepare data
     ds, classes, num_samples = prepare_data(dataset, subset, label_col, focal_loss)
     # init model
-    model = Net(backbone, len(classes), full_finetune)
+    model = Net(backbone, len(classes), train_mode, imgnet_ver)
     # load data
     traLoader, valLoader, tesLoader = load_data(
         ds,
@@ -192,6 +200,7 @@ def train(
         label_col,
         model.get_input_size(),
         str(model.model).find("BatchNorm") > 0,
+        batch_size=batch_size,
     )
     # loss & optimizer
     criterion = FocalLoss(num_samples) if focal_loss else nn.CrossEntropyLoss()
@@ -226,7 +235,7 @@ def train(
     save_to_csv(f"{log_dir}/loss.csv", ["loss_list"])
     best_eval_acc = 0.0
     # loop over the dataset multiple times
-    for epoch in range(epoch_num):
+    for ep in range(epochs):
         lr: float = optimizer.param_groups[0]["lr"]
         running_loss = 0.0
         loss_list = []
@@ -246,13 +255,7 @@ def train(
                 # print every 2000 mini-batches
                 if i % iteration == iteration - 1:
                     pbar.set_description(
-                        "epoch=%d/%d, lr=%.4f, loss=%.4f"
-                        % (
-                            epoch + 1,
-                            epoch_num,
-                            lr,
-                            running_loss / iteration,
-                        )
+                        f"{dataset.split('/')[1]} {data_col} {backbone}: ep={ep + 1}/{epochs}, lr={lr}, loss={round(running_loss / iteration, 4)}"
                     )
                     loss_list.append(running_loss / iteration)
 
@@ -283,33 +286,34 @@ def train(
         label_col,
         backbone,
         focal_loss,
-        full_finetune,
+        train_mode,
+        batch_size,
     )
 
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     parser = argparse.ArgumentParser(description="train")
-    parser.add_argument(
-        "--dataset",
-        type=str,
-        default="ccmusic-database/chest_falsetto",
-    )
+    parser.add_argument("--dataset", type=str, default="ccmusic-database/chest_falsetto")
     parser.add_argument("--subset", type=str, default="eval")
     parser.add_argument("--data", type=str, default="cqt")
     parser.add_argument("--label", type=str, default="singing_method")
     parser.add_argument("--backbone", type=str, default="squeezenet1_1")
-    parser.add_argument("--focalloss", type=bool, default=True)
-    parser.add_argument("--fullfinetune", type=bool, default=False)
+    parser.add_argument("--imgnet", type=str, default="v1")
+    parser.add_argument("--mode", type=int, default=2)
+    parser.add_argument("--bsz", type=int, default=4)
+    parser.add_argument("--eps", type=int, default=2)  # 40
+    parser.add_argument("--fl", type=bool, default=True)
     args = parser.parse_args()
-
     train(
-        dataset=args.dataset,  # dataset on modelscope
+        dataset=args.dataset,
         subset=args.subset,
         data_col=args.data,
         label_col=args.label,
         backbone=args.backbone,
-        focal_loss=args.focalloss,
-        full_finetune=args.fullfinetune,
-        epoch_num=2,  # 40
+        imgnet_ver=args.imgnet,
+        train_mode=args.mode,
+        batch_size=args.bsz,
+        epochs=args.eps,
+        focal_loss=args.fl,
     )
