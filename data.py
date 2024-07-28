@@ -34,14 +34,15 @@ def prepare_data(dataset: str, subset: str, label_col: str, focal_loss: bool):
     )
     try:
         classes = ds["test"]._hf_ds.features[label_col].names
+
     except AttributeError:
         classes = ds["test"].features[label_col].names
+
     except KeyError:
         print("Ensure the selected dataset has splits: train, validation and test")
         exit()
 
     num_samples = []
-
     if focal_loss:
         each_nums = {k: 0 for k in classes}
         for item in tqdm(ds["train"], desc="Statistics by category for focal loss..."):
@@ -69,10 +70,12 @@ def load_data(
         ds_train = ds["train"]._hf_ds
         ds_valid = ds["validation"]._hf_ds
         ds_test = ds["test"]._hf_ds
+
     except AttributeError:
         ds_train = ds["train"]
         ds_valid = ds["validation"]
         ds_test = ds["test"]
+
     except KeyError:
         print("Ensure the selected dataset has splits: train, validation and test")
         exit()
@@ -107,7 +110,7 @@ def load_data(
             img_size=input_size,
         )
     )
-
+    # Data loaders
     traLoader = DataLoader(
         trainset,
         batch_size=bs,

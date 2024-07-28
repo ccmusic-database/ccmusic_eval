@@ -33,7 +33,6 @@ class Net:
         self.type, self.weight_url, self.input_size = self._model_info(backbone)
         self.model = eval("models.%s()" % backbone)
         linear_output = self._set_outsize()
-
         if self.training:
             weight_path = self._download_model(self.weight_url)
             checkpoint = (
@@ -83,7 +82,6 @@ class Net:
     def _download_model(self, weight_url: str, model_dir="./model"):
         weight_path = f'{model_dir}/{weight_url.split("/")[-1]}'
         os.makedirs(model_dir, exist_ok=True)
-
         if not os.path.exists(weight_path):
             download(weight_url, weight_path)
 

@@ -29,14 +29,17 @@ def download(url: str, fname: str, max_retries=3):
             print(f"HTTP error occurred: {errh}")
             retry_count += 1
             continue
+
         except requests.exceptions.ConnectionError as errc:
             print(f"Connection error occurred: {errc}")
             retry_count += 1
             continue
+
         except requests.exceptions.Timeout as errt:
             print(f"Timeout error occurred: {errt}")
             retry_count += 1
             continue
+
         except Exception as err:
             print(f"Other error occurred: {err}")
             retry_count += 1
@@ -47,12 +50,13 @@ def download(url: str, fname: str, max_retries=3):
         exit()
 
 
-def unzip_file(zip_src, dst_dir):
+def unzip_file(zip_src: str, dst_dir: str):
     r = zipfile.is_zipfile(zip_src)
     if r:
         fz = zipfile.ZipFile(zip_src, "r")
         for file in fz.namelist():
             fz.extract(file, dst_dir)
+
     else:
         print("This is not a zip.")
 

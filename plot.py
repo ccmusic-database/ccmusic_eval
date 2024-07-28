@@ -5,24 +5,24 @@ from scipy import signal as ss
 plt.rcParams["font.sans-serif"] = "Times New Roman"
 
 
-def show_point(max_id, list):
-    show_max = f"({max_id + 1}, {round(list[max_id], 2)})"
+def show_point(max_id: int, data_list: list):
+    show_max = f"({max_id + 1}, {round(data_list[max_id], 2)})"
     plt.annotate(
         show_max,
-        xytext=(max_id + 1, list[max_id]),
-        xy=(max_id + 1, list[max_id]),
+        xytext=(max_id + 1, data_list[max_id]),
+        xy=(max_id + 1, data_list[max_id]),
         fontsize=6,
     )
 
 
-def smooth(y):
+def smooth(y: list):
     if 95 <= len(y):
         return ss.savgol_filter(y, 95, 3)
 
     return y
 
 
-def plot_acc(tra_acc_list, val_acc_list, save_path):
+def plot_acc(tra_acc_list: list, val_acc_list: list, save_path: str):
     x_acc = []
     for i in range(len(tra_acc_list)):
         x_acc.append(i + 1)
@@ -32,7 +32,6 @@ def plot_acc(tra_acc_list, val_acc_list, save_path):
     y2 = np.array(val_acc_list)
     max1 = np.argmax(y1)
     max2 = np.argmax(y2)
-
     plt.title("Accuracy of training and validation", fontweight="bold")
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy(%)")
@@ -47,7 +46,7 @@ def plot_acc(tra_acc_list, val_acc_list, save_path):
     plt.close()
 
 
-def plot_loss(loss_list, save_path):
+def plot_loss(loss_list: list, save_path: str):
     x_loss = []
     for i in range(len(loss_list)):
         x_loss.append(i + 1)
@@ -61,7 +60,10 @@ def plot_loss(loss_list, save_path):
 
 
 def plot_confusion_matrix(
-    cm: np.ndarray, labels_name: list, save_path: str, title="Confusion matrix"
+    cm: np.ndarray,
+    labels_name: list,
+    save_path: str,
+    title="Confusion matrix",
 ):
     cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]  # Normalized
     plt.imshow(cm, interpolation="nearest", cmap="Blues")  # 使用 'Blues' colormap

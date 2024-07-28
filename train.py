@@ -28,14 +28,13 @@ def eval_model(
         for data in tqdm(trainLoader, desc="Batch evaluation on trainset"):
             inputs = to_cuda(data[data_col])
             labels: torch.Tensor = to_cuda(data[label_col])
-            outputs = model.forward(inputs)
+            outputs: torch.Tensor = model.forward(inputs)
             predicted: torch.Tensor = torch.max(outputs.data, 1)[1]
             y_true.extend(labels.tolist())
             y_pred.extend(predicted.tolist())
 
         train_acc = 100.0 * accuracy_score(y_true, y_pred)
         print(f"Training accuracy : {round(train_acc, 2)}%")
-
         y_true, y_pred = [], []
         for data in tqdm(validLoader, desc="Batch evaluation on validset"):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
@@ -116,7 +115,6 @@ Use focal loss : {focal_loss}
 Best train acc : {round(best_train_acc, 2)}%
 Best eval acc  : {round(best_eval_acc, 2)}%
 """
-
     with open(f"{log_dir}/result.log", "w", encoding="utf-8") as f:
         f.write(cls_report + log)
 
@@ -140,14 +138,17 @@ def save_history(
     full_finetune: bool,
 ):
     cls_report, cm = test_model(
-        backbone, testLoader, classes, data_col, label_col, log_dir
+        backbone,
+        testLoader,
+        classes,
+        data_col,
+        label_col,
+        log_dir,
     )
-
     acc_list = pd.read_csv(f"{log_dir}/acc.csv")
     tra_acc_list = acc_list["tra_acc_list"].tolist()
     val_acc_list = acc_list["val_acc_list"].tolist()
     loss_list = pd.read_csv(f"{log_dir}/loss.csv")["loss_list"].tolist()
-
     plot_acc(tra_acc_list, val_acc_list, log_dir)
     plot_loss(loss_list, log_dir)
     save_log(
@@ -182,10 +183,8 @@ def train(
 ):
     # prepare data
     ds, classes, num_samples = prepare_data(dataset, subset, label_col, focal_loss)
-
     # init model
     model = Net(backbone, len(classes), full_finetune)
-
     # load data
     traLoader, valLoader, tesLoader = load_data(
         ds,
@@ -194,7 +193,6 @@ def train(
         model.get_input_size(),
         str(model.model).find("BatchNorm") > 0,
     )
-
     # loss & optimizer
     criterion = FocalLoss(num_samples) if focal_loss else nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr, momentum=0.9)
@@ -210,7 +208,6 @@ def train(
         min_lr=0,
         eps=1e-08,
     )
-
     # gpu
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -227,9 +224,9 @@ def train(
     print(f"Start tuning {backbone} at {start_time.strftime('%Y-%m-%d %H:%M:%S')} ...")
     save_to_csv(f"{log_dir}/acc.csv", ["tra_acc_list", "val_acc_list", "lr_list"])
     save_to_csv(f"{log_dir}/loss.csv", ["loss_list"])
-
     best_eval_acc = 0.0
-    for epoch in range(epoch_num):  # loop over the dataset multiple times
+    # loop over the dataset multiple times
+    for epoch in range(epoch_num):
         lr: float = optimizer.param_groups[0]["lr"]
         running_loss = 0.0
         loss_list = []
