@@ -69,8 +69,9 @@ class Net:
     def _model_info(self, backbone: str):
         backbone_list = MsDataset.load(
             "monetjoe/cv_backbones",
-            split="train",
+            split="v1",
             cache_dir=f"{os.getcwd()}/__pycache__",
+            download_mode="force_redownload",
         )
         backbone_info = self._get_backbone(backbone, backbone_list)
 

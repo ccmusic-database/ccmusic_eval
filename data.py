@@ -60,8 +60,8 @@ def load_data(
     input_size: int,
     has_bn: bool,
     shuffle=True,
-    batch_size=4,
-    num_workers=2,
+    batch_size=1,  # 4
+    num_workers=1,  # 2
 ):
     print("Loadeding data...")
     bs = batch_size
