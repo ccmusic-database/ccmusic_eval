@@ -28,12 +28,12 @@ pip install torch torchvision torchaudio -i https://pypi.tuna.tsinghua.edu.cn/si
 
 ## Usage
 ```bash
-python train.py --dataset ccmusic-database/chest_falsetto --subset eval --data cqt --label singing_method --backbone squeezenet1_1 --fl True --mode 0
+python train.py --ds ccmusic-database/chest_falsetto --subset eval --data cqt --label singing_method --backbone squeezenet1_1 --fl True --mode 0
 ```
 ### Help
 | Args       | Notes                                                                                                            | Options                                                                                    | Type   |
 | :--------- | :--------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- | :----- |
-| --dataset  | The dataset on [ModelScope](https://www.modelscope.cn/organization/ccmusic-database?tab=dataset) to be evaluated | For examples: ccmusic-database/chest_falsetto, ccmusic-database/bel_canto                  | string |
+| --ds       | The dataset on [ModelScope](https://www.modelscope.cn/organization/ccmusic-database?tab=dataset) to be evaluated | For examples: ccmusic-database/chest_falsetto, ccmusic-database/bel_canto                  | string |
 | --subset   | The subset of the dataset                                                                                        | For examples: default, eval                                                                | string |
 | --data     | Input data colum of the dataset                                                                                  | For examples: mel, cqt, chroma                                                             | string |
 | --label    | Label colum of the dataset                                                                                       | For examples: label, singing_method, gender                                                | string |

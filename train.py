@@ -9,9 +9,7 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 from plot import np, plot_acc, plot_loss, plot_confusion_matrix
 from data import DataLoader, prepare_data, load_data
 from utils import torch, tqdm, to_cuda, save_to_csv
-from model import os, nn, Net, FocalLoss
-
-TRAIN_MODE = ["full_finetune", "linear probe", "no_pretrain"]
+from model import os, nn, Net, FocalLoss, TRAIN_MODE
 
 
 def eval_model(
@@ -94,20 +92,20 @@ def save_log(
     finish_time: datetime,
     cls_report: str,
     log_dir: str,
-    backbone: str,
-    dataset: str,
+    backbone_name: str,
+    dataset_name: str,
     data_col: str,
     label_col: str,
-    focal_loss: str,
     best_train_acc: float,
     best_eval_acc: float,
-    mode: int,
+    train_mode_id: int,
     batch_size: int,
+    focal_loss: bool,
 ):
     log = f"""
-Backbone       : {backbone}
-Training mode  : {TRAIN_MODE[mode]}
-Dataset        : {dataset}
+Backbone       : {backbone_name}
+Training mode  : {TRAIN_MODE[train_mode_id]}
+Dataset        : {dataset_name}
 Data column    : {data_col}
 Label column   : {label_col}
 Class num      : {len(classes)}
@@ -133,15 +131,17 @@ def save_history(
     testLoader: DataLoader,
     classes: list,
     start_time: str,
-    finish_time: str,
     dataset: str,
+    subset: str,
     data_col: str,
     label_col: str,
     backbone: str,
-    focal_loss: str,
-    train_mode: int,
+    imgnet_ver: str,
+    train_mode_id: int,
     batch_size: int,
+    focal_loss: bool,
 ):
+    finish_time = datetime.now()
     cls_report, cm = test_model(
         backbone,
         testLoader,
@@ -163,15 +163,15 @@ def save_history(
         finish_time,
         cls_report,
         log_dir,
-        backbone,
-        dataset,
+        backbone + ("" if train_mode_id == 0 else " - ImageNet " + imgnet_ver.upper()),
+        f"{dataset} - {subset}",
         data_col,
         label_col,
-        focal_loss,
         max(tra_acc_list),
         max(val_acc_list),
-        train_mode,
+        train_mode_id,
         batch_size,
+        focal_loss,
     )
 
 
@@ -181,7 +181,7 @@ def train(
     data_col: str,
     label_col: str,
     backbone: str,
-    train_mode: int,
+    train_mode_id: int,
     focal_loss: bool,
     imgnet_ver="v1",
     batch_size=4,
@@ -192,7 +192,7 @@ def train(
     # prepare data
     ds, classes, num_samples = prepare_data(dataset, subset, label_col, focal_loss)
     # init model
-    model = Net(backbone, len(classes), train_mode, imgnet_ver)
+    model = Net(backbone, len(classes), train_mode_id, imgnet_ver)
     # load data
     traLoader, valLoader, tesLoader = load_data(
         ds,
@@ -280,39 +280,40 @@ def train(
         tesLoader,
         classes,
         start_time,
-        datetime.now(),
-        f"{dataset} - {subset}",
+        dataset,
+        subset,
         data_col,
         label_col,
         backbone,
-        focal_loss,
-        train_mode,
+        imgnet_ver,
+        train_mode_id,
         batch_size,
+        focal_loss,
     )
 
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     parser = argparse.ArgumentParser(description="train")
-    parser.add_argument("--dataset", type=str, default="ccmusic-database/chest_falsetto")
+    parser.add_argument("--ds", type=str, default="ccmusic-database/chest_falsetto")
     parser.add_argument("--subset", type=str, default="eval")
     parser.add_argument("--data", type=str, default="cqt")
     parser.add_argument("--label", type=str, default="singing_method")
     parser.add_argument("--backbone", type=str, default="squeezenet1_1")
     parser.add_argument("--imgnet", type=str, default="v1")
-    parser.add_argument("--mode", type=int, default=1)
-    parser.add_argument("--bsz", type=int, default=4)
+    parser.add_argument("--mode", type=int, default=2)
+    parser.add_argument("--bsz", type=int, default=2)
     parser.add_argument("--eps", type=int, default=2)  # 40
     parser.add_argument("--fl", type=bool, default=True)
     args = parser.parse_args()
     train(
-        dataset=args.dataset,
+        dataset=args.ds,
         subset=args.subset,
         data_col=args.data,
         label_col=args.label,
         backbone=args.backbone,
         imgnet_ver=args.imgnet,
-        train_mode=args.mode,
+        train_mode_id=args.mode,
         batch_size=args.bsz,
         epochs=args.eps,
         focal_loss=args.fl,

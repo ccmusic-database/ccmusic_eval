@@ -5,6 +5,8 @@ import torchvision.models as models
 from modelscope.msdatasets import MsDataset
 from utils import download
 
+TRAIN_MODE = ["no_pretrain", "linear_probe", "full_finetune"]
+
 
 class FocalLoss(nn.CrossEntropyLoss):
     def __init__(self, sample_sizes: list):
@@ -20,23 +22,27 @@ class Net:
         self,
         backbone: str,
         cls_num: int,
-        train_mode: int,
+        train_mode_id: int,
         imgnet_ver="v1",
         weight_path="",
     ):
+        if not train_mode_id in range(0, len(TRAIN_MODE)):
+            print(f"Unsupported training mode {train_mode_id}.")
+            exit()
+
         if not hasattr(models, backbone):
-            print("Unsupported model.")
+            print(f"Unsupported model {backbone}.")
             exit()
 
         self.imgnet_ver = imgnet_ver
         self.output_size = 512
         self.training = weight_path == ""
-        self.full_finetune = train_mode != 1
+        self.full_finetune = train_mode_id != 1
         self.type, self.weight_url, self.input_size = self._model_info(backbone)
         self.model: torch.nn.Module = eval("models.%s()" % backbone)
         linear_output = self._set_outsize()
         if self.training:
-            if train_mode != 2:
+            if train_mode_id > 0:
                 weight_path = self._download_model(self.weight_url)
                 checkpoint = (
                     torch.load(weight_path)
