@@ -299,9 +299,9 @@ if __name__ == "__main__":
     parser.add_argument("--subset", type=str, default="eval")
     parser.add_argument("--data", type=str, default="cqt")
     parser.add_argument("--label", type=str, default="singing_method")
-    parser.add_argument("--backbone", type=str, default="squeezenet1_1")
+    parser.add_argument("--model", type=str, default="squeezenet1_1")
     parser.add_argument("--imgnet", type=str, default="v1")
-    parser.add_argument("--mode", type=int, default=2)
+    parser.add_argument("--mode", type=int, default=1)
     parser.add_argument("--bsz", type=int, default=2)
     parser.add_argument("--eps", type=int, default=2)  # 40
     parser.add_argument("--fl", type=bool, default=True)
@@ -311,7 +311,7 @@ if __name__ == "__main__":
         subset=args.subset,
         data_col=args.data,
         label_col=args.label,
-        backbone=args.backbone,
+        backbone=args.model,
         imgnet_ver=args.imgnet,
         train_mode_id=args.mode,
         batch_size=args.bsz,
