@@ -80,6 +80,7 @@ class Net:
             "monetjoe/cv_backbones",
             split=self.imgnet_ver,
             cache_dir=f"{os.getcwd()}/__pycache__",
+            download_mode="force_redownload",
         )
         backbone_info = self._get_backbone(backbone, backbone_list)
 
