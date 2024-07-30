@@ -60,7 +60,7 @@ def unzip_file(zip_src: str, dst_dir: str):
             fz.extract(file, dst_dir)
 
     else:
-        print("This is not a zip.")
+        raise Exception("This is not a zip.")
 
 
 def to_cuda(x):
