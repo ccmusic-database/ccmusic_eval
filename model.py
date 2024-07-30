@@ -80,7 +80,6 @@ class Net:
             download_mode="force_redownload",
         )
         backbone_info = self._get_backbone(backbone, backbone_list)
-
         return (
             str(backbone_info["type"]),
             str(backbone_info["url"]),
@@ -203,14 +202,12 @@ class Net:
 
         if self.type == "googlenet" and self.training:
             return self.model(x)[0]
-
         else:
             return self.model(x)
 
     def parameters(self):
         if self.full_finetune:
             return self.model.parameters()
-
         else:
             return self.classifier.parameters()
 
