@@ -81,7 +81,6 @@ def test_model(
 
     report = classification_report(y_true, y_pred, target_names=classes, digits=3)
     cm = confusion_matrix(y_true, y_pred, normalize="all")
-
     return report, cm
 
 
