@@ -28,7 +28,7 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 ## Usage
 ```bash
-python train.py --ds ccmusic-database/chest_falsetto --subset eval --data cqt --label singing_method --backbone squeezenet1_1 --fl True --mode 0
+python train.py --ds ccmusic-database/chest_falsetto --subset eval --data cqt --label singing_method --model squeezenet1_1 --fl True --mode 0
 ```
 ### Help
 | Args     | Notes                                                                                                            | Options                                                                                                                                                                                                        | Type   |
