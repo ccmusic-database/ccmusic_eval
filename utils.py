@@ -23,6 +23,7 @@ def download(url: str, fname: str, max_retries=3):
                 for data in resp.iter_content(chunk_size=1024):
                     size = file.write(data)
                     bar.update(size)
+
             return
 
         except requests.exceptions.HTTPError as errh:
