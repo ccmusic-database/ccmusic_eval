@@ -27,12 +27,10 @@ class Net:
         weight_path="",
     ):
         if not train_mode_id in range(0, len(TRAIN_MODE)):
-            print(f"Unsupported training mode {train_mode_id}.")
-            exit()
+            raise ValueError(f"Unsupported training mode {train_mode_id}.")
 
         if not hasattr(models, backbone):
-            print(f"Unsupported model {backbone}.")
-            exit()
+            raise ValueError(f"Unsupported model {backbone}.")
 
         self.imgnet_ver = imgnet_ver
         self.output_size = 512
@@ -72,8 +70,7 @@ class Net:
             if backbone_ver == backbone_info["ver"]:
                 return backbone_info
 
-        print("[Backbone not found] Please check if --backbone is correct!")
-        exit()
+        raise ValueError("[Backbone not found] Please check if --model is correct!")
 
     def _model_info(self, backbone: str):
         backbone_list = MsDataset.load(

@@ -46,8 +46,9 @@ def download(url: str, fname: str, max_retries=3):
             continue
 
     else:
-        print(f"The operation could not be completed after {max_retries} retries.")
-        exit()
+        raise Exception(
+            f"The operation could not be completed after {max_retries} retries."
+        )
 
 
 def unzip_file(zip_src: str, dst_dir: str):

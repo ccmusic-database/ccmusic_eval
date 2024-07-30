@@ -1,9 +1,9 @@
 import csv
 import argparse
 import warnings
+import pandas as pd
 import torch.utils.data
 import torch.optim as optim
-import pandas as pd
 from datetime import datetime
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from plot import np, plot_acc, plot_loss, plot_confusion_matrix
@@ -303,7 +303,7 @@ if __name__ == "__main__":
     parser.add_argument("--imgnet", type=str, default="v1")
     parser.add_argument("--mode", type=int, default=1)
     parser.add_argument("--bsz", type=int, default=2)
-    parser.add_argument("--eps", type=int, default=2)  # 40
+    parser.add_argument("--eps", type=int, default=40)
     parser.add_argument("--fl", type=bool, default=True)
     args = parser.parse_args()
     train(
@@ -315,6 +315,6 @@ if __name__ == "__main__":
         imgnet_ver=args.imgnet,
         train_mode_id=args.mode,
         batch_size=args.bsz,
-        epochs=args.eps,
+        epochs=2,  # args.eps,
         focal_loss=args.fl,
     )

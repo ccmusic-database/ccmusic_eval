@@ -38,10 +38,6 @@ def prepare_data(dataset: str, subset: str, label_col: str, focal_loss: bool):
     except AttributeError:
         classes = ds["test"].features[label_col].names
 
-    except KeyError:
-        print("Ensure the selected dataset has splits: train, validation and test")
-        exit()
-
     num_samples = []
     if focal_loss:
         each_nums = {k: 0 for k in classes}
@@ -74,10 +70,6 @@ def load_data(
         ds_train = ds["train"]
         ds_valid = ds["validation"]
         ds_test = ds["test"]
-
-    except KeyError:
-        print("Ensure the selected dataset has splits: train, validation and test")
-        exit()
 
     if has_bn:
         print("The model has bn layer")
