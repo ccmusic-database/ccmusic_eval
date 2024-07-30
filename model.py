@@ -138,6 +138,7 @@ class Net:
                 str(name).__contains__("classifier")
                 or str(name).__eq__("fc")
                 or str(name).__contains__("head")
+                or hasattr(module, "classifier")
             ):
                 if isinstance(module, torch.nn.Linear):
                     self.output_size = module.in_features
@@ -162,6 +163,14 @@ class Net:
     def _set_classifier(self, cls_num, linear_output):
         if self.type == "convnext":
             del self.model.classifier[2]
+            self.model.classifier = nn.Sequential(
+                *list(self.model.classifier)
+                + list(self._create_classifier(cls_num, linear_output))
+            )
+            self.classifier = self.model.classifier
+
+        elif self.type == "maxvit":
+            del self.model.classifier[5]
             self.model.classifier = nn.Sequential(
                 *list(self.model.classifier)
                 + list(self._create_classifier(cls_num, linear_output))
