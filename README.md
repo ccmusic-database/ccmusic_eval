@@ -44,6 +44,23 @@ python train.py --ds ccmusic-database/chest_falsetto --subset eval --data cqt --
 | --eps    | Epoch number                                                                                                     | Default is 40                                                                                                                                                                                                  | int    |
 | --fl     | Whether to use focal loss                                                                                        | True, False                                                                                                                                                                                                    | bool   |
 
+### Fixed Hyper Params
+|     Param      | Value |   Range   |
+| :------------: | :---: | :-------: |
+|   iteration    |  10   |   train   |
+|       lr       | 0.001 | optimizer |
+|    momentum    |  0.9  | optimizer |
+|   optimizer    |  SGD  | scheduler |
+|      mode      |  min  | scheduler |
+|     factor     |  0.1  | scheduler |
+|    patience    |   5   | scheduler |
+|    verbose     | True  | scheduler |
+|   threshold    |  lr   | scheduler |
+| threshold_mode |  rel  | scheduler |
+|    cooldown    |   0   | scheduler |
+|     min_lr     |   0   | scheduler |
+|      eps       | 1e-08 | scheduler |
+
 ## Cite
 ```bibtex
 @dataset{zhaorui_liu_2021_5676893,
