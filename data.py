@@ -30,7 +30,7 @@ def prepare_data(dataset: str, subset: str, label_col: str, focal_loss: bool):
     ds = MsDataset.load(
         dataset,
         subset_name=subset,
-        cache_dir=f"{os.getcwd()}/__pycache__",
+        cache_dir="./__pycache__",
     )
     try:
         classes = ds["test"]._hf_ds.features[label_col].names

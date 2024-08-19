@@ -76,7 +76,7 @@ class Net:
         backbone_list = MsDataset.load(
             "monetjoe/cv_backbones",
             split=self.imgnet_ver,
-            cache_dir=f"{os.getcwd()}/__pycache__",
+            cache_dir="./__pycache__",
             download_mode="force_redownload",
         )
         backbone_info = self._get_backbone(backbone, backbone_list)
@@ -86,7 +86,7 @@ class Net:
             int(backbone_info["input_size"]),
         )
 
-    def _download_model(self, weight_url: str, model_dir="./model"):
+    def _download_model(self, weight_url: str, model_dir="./__pycache__"):
         weight_path = f'{model_dir}/{weight_url.split("/")[-1]}'
         os.makedirs(model_dir, exist_ok=True)
         if not os.path.exists(weight_path):
