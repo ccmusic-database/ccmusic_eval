@@ -14,7 +14,7 @@ git clone git@github.com:monetjoe/ccmusic_eval.git
 cd ccmusic_eval
 ```
 
-## Requirements
+## Environment
 ### Conda + Pip
 ```bash
 conda create -n cv --yes --file conda.txt -c nvidia
