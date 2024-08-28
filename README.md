@@ -15,16 +15,10 @@ cd ccmusic_eval
 ```
 
 ## Environment
-### Conda + Pip
 ```bash
-conda create -n cv --yes --file conda.txt -c nvidia
-conda activate cv
-pip install -r requirements.txt
-```
-
-### Pip only
-```bash
-pip install torch torchvision torchaudio -i https://pypi.tuna.tsinghua.edu.cn/simple
+conda create -n ccmusic python=3.10 --yes
+conda activate ccmusic
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
