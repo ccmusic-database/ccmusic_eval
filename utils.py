@@ -1,8 +1,11 @@
+import os
 import csv
 import torch
 import zipfile
 import requests
 from tqdm import tqdm
+
+os.environ["MODELSCOPE_LOG_LEVEL"] = "40"
 
 
 def download(url: str, fname: str, max_retries=3):

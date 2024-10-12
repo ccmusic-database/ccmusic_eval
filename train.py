@@ -7,9 +7,9 @@ import torch.optim as optim
 from datetime import datetime
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from plot import np, plot_acc, plot_loss, plot_confusion_matrix
+from utils import os, torch, tqdm, to_cuda, save_to_csv
 from data import DataLoader, prepare_data, load_data
-from utils import torch, tqdm, to_cuda, save_to_csv
-from model import os, nn, Net, FocalLoss, TRAIN_MODE
+from model import nn, Net, FocalLoss, TRAIN_MODE
 
 
 def eval_model(
