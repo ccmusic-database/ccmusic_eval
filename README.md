@@ -18,7 +18,7 @@ cd ccmusic_eval
 ```bash
 conda create -n ccmusic python=3.10 --yes
 conda activate ccmusic
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu113
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 

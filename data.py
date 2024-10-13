@@ -26,18 +26,13 @@ def transform(example_batch, data_column: str, label_column: str, img_size: int)
 
 
 def prepare_data(dataset: str, subset: str, label_col: str, focal_loss: bool):
-    print("Preparing data...")
+    print("Preparing & loading data...")
     ds = MsDataset.load(
         dataset,
         subset_name=subset,
         cache_dir="./__pycache__",
     )
-    try:
-        classes = ds["test"]._hf_ds.features[label_col].names
-
-    except AttributeError:
-        classes = ds["test"].features[label_col].names
-
+    classes = ds["test"].features[label_col].names
     num_samples = []
     if focal_loss:
         each_nums = {k: 0 for k in classes}
@@ -46,7 +41,6 @@ def prepare_data(dataset: str, subset: str, label_col: str, focal_loss: bool):
 
         num_samples = list(each_nums.values())
 
-    print("The data is prepared.")
     return ds, classes, num_samples
 
 
@@ -59,25 +53,14 @@ def load_data(
     shuffle=True,
     batch_size=4,
 ):
-    print("Loadeding data...")
     bs = batch_size
-    try:
-        ds_train = ds["train"]._hf_ds
-        ds_valid = ds["validation"]._hf_ds
-        ds_test = ds["test"]._hf_ds
-
-    except AttributeError:
-        ds_train = ds["train"]
-        ds_valid = ds["validation"]
-        ds_test = ds["test"]
-
     if has_bn:
         print("The model has bn layer")
         if bs < 2:
             print("Switch batch_size >= 2")
             bs = 2
 
-    trainset = ds_train.with_transform(
+    trainset = ds["train"].with_transform(
         partial(
             transform,
             data_column=data_col,
@@ -85,7 +68,7 @@ def load_data(
             img_size=input_size,
         )
     )
-    validset = ds_valid.with_transform(
+    validset = ds["validation"].with_transform(
         partial(
             transform,
             data_column=data_col,
@@ -93,7 +76,7 @@ def load_data(
             img_size=input_size,
         )
     )
-    testset = ds_test.with_transform(
+    testset = ds["test"].with_transform(
         partial(
             transform,
             data_column=data_col,
@@ -123,6 +106,5 @@ def load_data(
         num_workers=num_workers,
         drop_last=has_bn,
     )
-    print("The data is loaded.")
 
     return traLoader, valLoader, tesLoader
