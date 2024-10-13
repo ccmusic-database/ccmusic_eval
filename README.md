@@ -16,10 +16,9 @@ cd ccmusic_eval
 
 ## Environment
 ```bash
-conda create -n ccmusic python=3.10 -y
-conda activate ccmusic
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu113
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+conda create -n py311 python=3.11 -y
+conda activate py311
+pip install -r requirements.txt
 ```
 
 ## Usage
