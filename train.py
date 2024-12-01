@@ -294,16 +294,16 @@ def train(
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     parser = argparse.ArgumentParser(description="train")
-    parser.add_argument("--ds", type=str, default="ccmusic-database/chest_falsetto")
+    parser.add_argument("--ds", type=str, default="ccmusic-database/GZ_IsoTech")
     parser.add_argument("--subset", type=str, default="eval")
     parser.add_argument("--data", type=str, default="cqt")
-    parser.add_argument("--label", type=str, default="singing_method")
+    parser.add_argument("--label", type=str, default="label")
     parser.add_argument("--model", type=str, default="squeezenet1_1")
     parser.add_argument("--imgnet", type=str, default="v1")
     parser.add_argument("--mode", type=int, default=1)
     parser.add_argument("--bsz", type=int, default=2)
     parser.add_argument("--eps", type=int, default=40)
-    parser.add_argument("--fl", type=bool, default=True)
+    parser.add_argument("--wce", type=bool, default=True)
     args = parser.parse_args()
     train(
         dataset=args.ds,
@@ -314,6 +314,6 @@ if __name__ == "__main__":
         imgnet_ver=args.imgnet,
         train_mode_id=args.mode,
         batch_size=args.bsz,
-        epochs=2,  # args.eps,
-        focal_loss=args.fl,
+        epochs=args.eps,
+        focal_loss=args.wce,
     )
