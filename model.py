@@ -5,7 +5,7 @@ import torchvision.models as models
 from modelscope.msdatasets import MsDataset
 from utils import download
 
-TRAIN_MODE = ["no_pretrain", "linear_probe", "full_finetune"]
+TRAIN_MODES = ["no_pretrain", "linear_probe", "full_finetune"]
 
 
 class WCE(nn.CrossEntropyLoss):
@@ -26,7 +26,7 @@ class Net:
         imgnet_ver="v1",
         weight_path="",
     ):
-        if not train_mode_id in range(0, len(TRAIN_MODE)):
+        if not train_mode_id in range(0, len(TRAIN_MODES)):
             raise ValueError(f"Unsupported training mode {train_mode_id}.")
 
         if not hasattr(models, backbone):

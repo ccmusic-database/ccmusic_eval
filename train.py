@@ -9,7 +9,7 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 from plot import np, plot_acc, plot_loss, plot_confusion_matrix
 from utils import os, torch, tqdm, to_cuda, save_to_csv
 from data import DataLoader, prepare_data, load_data
-from model import nn, Net, WCE, TRAIN_MODE
+from model import nn, Net, WCE, TRAIN_MODES
 
 
 def eval_model(
@@ -97,13 +97,13 @@ def save_log(
     label_col: str,
     best_train_acc: float,
     best_eval_acc: float,
-    train_mode_id: int,
+    train_mode: int,
     batch_size: int,
     use_wce: bool,
 ):
     log = f"""
 Backbone       : {backbone_name}
-Training mode  : {TRAIN_MODE[train_mode_id]}
+Training mode  : {TRAIN_MODES[train_mode]}
 Dataset        : {dataset_name}
 Data column    : {data_col}
 Label column   : {label_col}
@@ -136,7 +136,7 @@ def save_history(
     label_col: str,
     backbone: str,
     imgnet_ver: str,
-    train_mode_id: int,
+    train_mode: int,
     batch_size: int,
     use_wce: bool,
 ):
@@ -162,13 +162,13 @@ def save_history(
         finish_time,
         cls_report,
         log_dir,
-        backbone + ("" if train_mode_id == 0 else " - ImageNet " + imgnet_ver.upper()),
+        backbone + ("" if train_mode == 0 else " - ImageNet " + imgnet_ver.upper()),
         f"{dataset} - {subset}",
         data_col,
         label_col,
         max(tra_acc_list),
         max(val_acc_list),
-        train_mode_id,
+        train_mode,
         batch_size,
         use_wce,
     )
@@ -180,7 +180,7 @@ def train(
     data_col: str,
     label_col: str,
     backbone: str,
-    train_mode_id: int,
+    train_mode: int,
     use_wce: bool,
     imgnet_ver="v1",
     batch_size=4,
@@ -191,7 +191,7 @@ def train(
     # prepare data
     ds, classes, num_samples = prepare_data(dataset, subset, label_col, use_wce)
     # init model
-    model = Net(backbone, len(classes), train_mode_id, imgnet_ver)
+    model = Net(backbone, len(classes), train_mode, imgnet_ver)
     # load data
     traLoader, valLoader, tesLoader = load_data(
         ds,
@@ -285,7 +285,7 @@ def train(
         label_col,
         backbone,
         imgnet_ver,
-        train_mode_id,
+        train_mode,
         batch_size,
         use_wce,
     )
@@ -312,7 +312,7 @@ if __name__ == "__main__":
         label_col=args.label,
         backbone=args.model,
         imgnet_ver=args.imgnet,
-        train_mode_id=args.mode,
+        train_mode=args.mode,
         batch_size=args.bsz,
         epochs=args.eps,
         use_wce=args.wce,
