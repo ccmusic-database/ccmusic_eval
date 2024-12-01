@@ -99,7 +99,7 @@ def save_log(
     best_eval_acc: float,
     train_mode_id: int,
     batch_size: int,
-    focal_loss: bool,
+    use_wce: bool,
 ):
     log = f"""
 Backbone       : {backbone_name}
@@ -112,7 +112,7 @@ Batch size     : {batch_size}
 Start time     : {start_time.strftime('%Y-%m-%d %H:%M:%S')}
 Finish time    : {finish_time.strftime('%Y-%m-%d %H:%M:%S')}
 Time cost      : {(finish_time - start_time).seconds}s
-Use focal loss : {focal_loss}
+Use WCE loss   : {use_wce}
 Best train acc : {round(best_train_acc, 2)}%
 Best eval acc  : {round(best_eval_acc, 2)}%
 """
@@ -138,7 +138,7 @@ def save_history(
     imgnet_ver: str,
     train_mode_id: int,
     batch_size: int,
-    focal_loss: bool,
+    use_wce: bool,
 ):
     finish_time = datetime.now()
     cls_report, cm = test_model(
@@ -170,7 +170,7 @@ def save_history(
         max(val_acc_list),
         train_mode_id,
         batch_size,
-        focal_loss,
+        use_wce,
     )
 
 
@@ -181,7 +181,7 @@ def train(
     label_col: str,
     backbone: str,
     train_mode_id: int,
-    focal_loss: bool,
+    use_wce: bool,
     imgnet_ver="v1",
     batch_size=4,
     epochs=40,
@@ -189,7 +189,7 @@ def train(
     lr=0.001,
 ):
     # prepare data
-    ds, classes, num_samples = prepare_data(dataset, subset, label_col, focal_loss)
+    ds, classes, num_samples = prepare_data(dataset, subset, label_col, use_wce)
     # init model
     model = Net(backbone, len(classes), train_mode_id, imgnet_ver)
     # load data
@@ -202,7 +202,7 @@ def train(
         batch_size=batch_size,
     )
     # loss & optimizer
-    criterion = WCE(num_samples) if focal_loss else nn.CrossEntropyLoss()
+    criterion = WCE(num_samples) if use_wce else nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
@@ -287,7 +287,7 @@ def train(
         imgnet_ver,
         train_mode_id,
         batch_size,
-        focal_loss,
+        use_wce,
     )
 
 
@@ -315,5 +315,5 @@ if __name__ == "__main__":
         train_mode_id=args.mode,
         batch_size=args.bsz,
         epochs=args.eps,
-        focal_loss=args.wce,
+        use_wce=args.wce,
     )
