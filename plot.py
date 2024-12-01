@@ -69,21 +69,24 @@ def plot_confusion_matrix(
     plt.imshow(cm, interpolation="nearest", cmap="Blues")  # 使用 'Blues' colormap
     plt.title(title, fontweight="bold")  # 图像标题
     plt.colorbar()
-    num_local = np.array(range(len(labels_name)))
-    # 在色块上添加数值
-    for i in range(len(labels_name)):
-        for j in range(len(labels_name)):
-            plt.text(
-                j,
-                i,
-                format(cm[i, j], ".2f"),
-                horizontalalignment="center",
-                color="black" if cm[i, j] <= 0.5 else "white",
-            )  # 根据色块亮度选择文本颜色
-    # 在x轴坐标上打印标签
-    plt.xticks(num_local, labels_name, rotation=45)
-    # 在y轴坐标上打印标签
-    plt.yticks(num_local, labels_name)
+    count = len(labels_name)
+    num_local = np.array(range(count))
+    if count <= 20:
+        # 在色块上添加数值
+        for i in range(count):
+            for j in range(count):
+                plt.text(
+                    j,
+                    i,
+                    format(cm[i, j], ".2f"),
+                    horizontalalignment="center",
+                    color="black" if cm[i, j] <= 0.5 else "white",
+                )  # 根据色块亮度选择文本颜色
+        # 在x轴坐标上打印标签
+        plt.xticks(num_local, labels_name, rotation=45)
+        # 在y轴坐标上打印标签
+        plt.yticks(num_local, labels_name)
+
     plt.ylabel("True label")
     plt.xlabel("Predicted label")
     plt.tight_layout()
