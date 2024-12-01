@@ -8,9 +8,9 @@ from utils import download
 TRAIN_MODE = ["no_pretrain", "linear_probe", "full_finetune"]
 
 
-class FocalLoss(nn.CrossEntropyLoss):
+class WCE(nn.CrossEntropyLoss):
     def __init__(self, sample_sizes: list):
-        super(FocalLoss, self).__init__()
+        super(WCE, self).__init__()
         weights = torch.tensor(
             [1.0 / size for size in sample_sizes], dtype=torch.float32
         )

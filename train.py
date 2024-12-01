@@ -9,7 +9,7 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 from plot import np, plot_acc, plot_loss, plot_confusion_matrix
 from utils import os, torch, tqdm, to_cuda, save_to_csv
 from data import DataLoader, prepare_data, load_data
-from model import nn, Net, FocalLoss, TRAIN_MODE
+from model import nn, Net, WCE, TRAIN_MODE
 
 
 def eval_model(
@@ -202,7 +202,7 @@ def train(
         batch_size=batch_size,
     )
     # loss & optimizer
-    criterion = FocalLoss(num_samples) if focal_loss else nn.CrossEntropyLoss()
+    criterion = WCE(num_samples) if focal_loss else nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
@@ -294,14 +294,14 @@ def train(
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     parser = argparse.ArgumentParser(description="train")
-    parser.add_argument("--ds", type=str, default="ccmusic-database/GZ_IsoTech")
+    parser.add_argument("--ds", type=str, default="ccmusic-database/CNPM")
     parser.add_argument("--subset", type=str, default="eval")
-    parser.add_argument("--data", type=str, default="cqt")
-    parser.add_argument("--label", type=str, default="label")
+    parser.add_argument("--data", type=str, default="mel")
+    parser.add_argument("--label", type=str, default="pattern")
     parser.add_argument("--model", type=str, default="squeezenet1_1")
     parser.add_argument("--imgnet", type=str, default="v1")
-    parser.add_argument("--mode", type=int, default=1)
-    parser.add_argument("--bsz", type=int, default=2)
+    parser.add_argument("--mode", type=int, default=2)
+    parser.add_argument("--bsz", type=int, default=4)
     parser.add_argument("--eps", type=int, default=40)
     parser.add_argument("--wce", type=bool, default=True)
     args = parser.parse_args()
