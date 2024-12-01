@@ -297,7 +297,7 @@ if __name__ == "__main__":
     parser.add_argument("--ds", type=str, default="ccmusic-database/CNPM")
     parser.add_argument("--subset", type=str, default="eval")
     parser.add_argument("--data", type=str, default="mel")
-    parser.add_argument("--label", type=str, default="pattern")
+    parser.add_argument("--label", type=str, default="label")
     parser.add_argument("--model", type=str, default="squeezenet1_1")
     parser.add_argument("--imgnet", type=str, default="v1")
     parser.add_argument("--mode", type=int, default=2)
