@@ -22,12 +22,12 @@ class Net:
         self,
         backbone: str,
         cls_num: int,
-        train_mode_id: int,
+        train_mode: int,
         imgnet_ver="v1",
         weight_path="",
     ):
-        if not train_mode_id in range(0, len(TRAIN_MODES)):
-            raise ValueError(f"Unsupported training mode {train_mode_id}.")
+        if not train_mode in range(len(TRAIN_MODES)):
+            raise ValueError(f"Unsupported training mode {train_mode}.")
 
         if not hasattr(models, backbone):
             raise ValueError(f"Unsupported model {backbone}.")
@@ -35,12 +35,12 @@ class Net:
         self.imgnet_ver = imgnet_ver
         self.output_size = 512
         self.training = weight_path == ""
-        self.full_finetune = train_mode_id != 1
+        self.full_finetune = train_mode != 1
         self.type, self.weight_url, self.input_size = self._model_info(backbone)
         self.model: torch.nn.Module = eval("models.%s()" % backbone)
         linear_output = self._set_outsize()
         if self.training:
-            if train_mode_id > 0:
+            if train_mode > 0:
                 weight_path = self._download_model(self.weight_url)
                 checkpoint = (
                     torch.load(weight_path)
