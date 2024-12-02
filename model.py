@@ -11,11 +11,12 @@ TRAIN_MODES = ["linear_probe", "full_finetune", "no_pretrain"]
 class WCE(nn.CrossEntropyLoss):
     def __init__(self, sample_sizes: list):
         super(WCE, self).__init__()
-        weights = torch.tensor(
-            [1.0 / size for size in sample_sizes],
-            dtype=torch.float32,
-        )
-        self.weight = weights / weights.sum()
+        if len(sample_sizes) > 0:
+            weights = torch.tensor(
+                [1.0 / size for size in sample_sizes],
+                dtype=torch.float32,
+            )
+            self.weight = weights / weights.sum()
 
 
 class Net:

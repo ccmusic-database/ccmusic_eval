@@ -9,7 +9,7 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 from plot import np, plot_acc, plot_loss, plot_confusion_matrix
 from utils import os, torch, tqdm, to_cuda, save_to_csv
 from data import DataLoader, prepare_data, load_data
-from model import nn, Net, WCE, TRAIN_MODES
+from model import Net, WCE, TRAIN_MODES
 
 
 def eval_model(
@@ -29,9 +29,9 @@ def eval_model(
             inputs = to_cuda(data[data_col])
             labels: torch.Tensor = to_cuda(data[label_col])
             outputs: torch.Tensor = model.forward(inputs)
-            predicted: torch.Tensor = torch.max(outputs.data, 1)[1]
+            predicts: torch.Tensor = torch.max(outputs.data, 1)[1]
             y_true.extend(labels.tolist())
-            y_pred.extend(predicted.tolist())
+            y_pred.extend(predicts.tolist())
 
         train_acc = 100.0 * accuracy_score(y_true, y_pred)
         print(f"Training accuracy : {round(train_acc, 2)}%")
@@ -39,9 +39,9 @@ def eval_model(
         for data in tqdm(validLoader, desc="Batch evaluation on validset"):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
             outputs = model.forward(inputs)
-            predicted = torch.max(outputs.data, 1)[1]
+            predicts = torch.max(outputs.data, 1)[1]
             y_true.extend(labels.tolist())
-            y_pred.extend(predicted.tolist())
+            y_pred.extend(predicts.tolist())
 
         valid_acc = 100.0 * accuracy_score(y_true, y_pred)
         print(f"Validation accuracy : {round(valid_acc, 2)}%")
@@ -162,7 +162,7 @@ def save_history(
         finish_time,
         cls_report,
         log_dir,
-        backbone + ("" if train_mode > 1 else f" - ImageNet {imgnet_ver.upper()}"),
+        backbone + (f" - ImageNet {imgnet_ver.upper()}" if train_mode < 2 else ""),
         f"{dataset} - {subset}",
         data_col,
         label_col,
@@ -202,7 +202,7 @@ def train(
         batch_size=batch_size,
     )
     # loss & optimizer
-    criterion = WCE(num_samples) if use_wce else nn.CrossEntropyLoss()
+    criterion = WCE(num_samples)
     optimizer = optim.SGD(model.parameters(), lr, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
