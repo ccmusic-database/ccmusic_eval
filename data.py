@@ -36,7 +36,7 @@ def prepare_data(dataset: str, subset: str, label_col: str, use_wce: bool):
     num_samples = []
     if use_wce:
         each_nums = {k: 0 for k in classes}
-        for item in tqdm(ds["train"], desc="Statistics by category for WCE loss..."):
+        for item in tqdm(ds["train"], desc="Statistics by category for WCE loss"):
             each_nums[classes[item[label_col]]] += 1
 
         num_samples = list(each_nums.values())

@@ -17,7 +17,7 @@ def download(url: str, fname: str, max_retries=3):
             resp.raise_for_status()
             total = int(resp.headers.get("content-length", 0))
             with open(fname, "wb") as file, tqdm(
-                desc=f"Downloading {url} to {fname}...",
+                desc=f"Downloading {url} to {fname}",
                 total=total,
                 unit="iB",
                 unit_scale=True,

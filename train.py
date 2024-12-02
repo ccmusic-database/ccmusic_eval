@@ -68,16 +68,16 @@ def test_model(
     label_col: str,
     log_dir: str,
 ):
-    model = Net(backbone, len(classes), False, weight_path=f"{log_dir}/save.pt")
+    model = Net(backbone, len(classes), 0, weight_path=f"{log_dir}/save.pt")
     y_true, y_pred = [], []
     with torch.no_grad():
         for data in tqdm(testLoader, desc="Batch evaluation on testset"):
             inputs = to_cuda(data[data_col])
             labels: torch.Tensor = to_cuda(data[label_col])
             outputs = model.forward(inputs)
-            predicted: torch.Tensor = torch.max(outputs.data, 1)[1]
+            predicts: torch.Tensor = torch.max(outputs.data, 1)[1]
             y_true.extend(labels.tolist())
-            y_pred.extend(predicted.tolist())
+            y_pred.extend(predicts.tolist())
 
     report = classification_report(y_true, y_pred, target_names=classes, digits=3)
     cm = confusion_matrix(y_true, y_pred, normalize="all")
@@ -162,7 +162,7 @@ def save_history(
         finish_time,
         cls_report,
         log_dir,
-        backbone + ("" if train_mode == 0 else " - ImageNet " + imgnet_ver.upper()),
+        backbone + ("" if train_mode > 1 else f" - ImageNet {imgnet_ver.upper()}"),
         f"{dataset} - {subset}",
         data_col,
         label_col,
@@ -226,18 +226,18 @@ def train(
                     state[k] = v.cuda()
 
     # start training
+    best_eval_acc = 0.0
     start_time = datetime.now()
     log_dir = f"./logs/{dataset.replace('/', '_')}/{backbone}_{data_col}_{start_time.strftime('%Y-%m-%d_%H-%M-%S')}"
     os.makedirs(log_dir, exist_ok=True)
-    print(f"Start training {backbone} at {start_time.strftime('%Y-%m-%d %H:%M:%S')}...")
-    save_to_csv(f"{log_dir}/acc.csv", ["tra_acc_list", "val_acc_list", "lr_list"])
     save_to_csv(f"{log_dir}/loss.csv", ["loss_list"])
-    best_eval_acc = 0.0
+    save_to_csv(f"{log_dir}/acc.csv", ["tra_acc_list", "val_acc_list", "lr_list"])
+    print(f"Start training {backbone} at {start_time.strftime('%Y-%m-%d %H:%M:%S')}...")
     # loop over the dataset multiple times
     for ep in range(epochs):
-        lr: float = optimizer.param_groups[0]["lr"]
-        running_loss = 0.0
         loss_list = []
+        running_loss = 0.0
+        lr: float = optimizer.param_groups[0]["lr"]
         with tqdm(total=len(traLoader), unit="batch") as pbar:
             for i, data in enumerate(traLoader, 0):
                 # get the inputs
@@ -294,13 +294,13 @@ def train(
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     parser = argparse.ArgumentParser(description="train")
-    parser.add_argument("--ds", type=str, default="ccmusic-database/CNPM")
+    parser.add_argument("--ds", type=str, default="ccmusic-database/bel_canto")
     parser.add_argument("--subset", type=str, default="eval")
     parser.add_argument("--data", type=str, default="mel")
     parser.add_argument("--label", type=str, default="label")
     parser.add_argument("--model", type=str, default="squeezenet1_1")
     parser.add_argument("--imgnet", type=str, default="v1")
-    parser.add_argument("--mode", type=int, default=2)
+    parser.add_argument("--mode", type=int, default=1)
     parser.add_argument("--bsz", type=int, default=4)
     parser.add_argument("--eps", type=int, default=40)
     parser.add_argument("--wce", type=bool, default=True)

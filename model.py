@@ -5,14 +5,15 @@ import torchvision.models as models
 from modelscope.msdatasets import MsDataset
 from utils import download
 
-TRAIN_MODES = ["no_pretrain", "linear_probe", "full_finetune"]
+TRAIN_MODES = ["linear_probe", "full_finetune", "no_pretrain"]
 
 
 class WCE(nn.CrossEntropyLoss):
     def __init__(self, sample_sizes: list):
         super(WCE, self).__init__()
         weights = torch.tensor(
-            [1.0 / size for size in sample_sizes], dtype=torch.float32
+            [1.0 / size for size in sample_sizes],
+            dtype=torch.float32,
         )
         self.weight = weights / weights.sum()
 
@@ -32,15 +33,15 @@ class Net:
         if not hasattr(models, backbone):
             raise ValueError(f"Unsupported model {backbone}.")
 
-        self.imgnet_ver = imgnet_ver
         self.output_size = 512
-        self.training = weight_path == ""
-        self.full_finetune = train_mode != 1
+        self.imgnet_ver = imgnet_ver
+        self.training = bool(weight_path == "")
+        self.full_finetune = bool(train_mode > 0)
         self.type, self.weight_url, self.input_size = self._model_info(backbone)
         self.model: torch.nn.Module = eval("models.%s()" % backbone)
         linear_output = self._set_outsize()
         if self.training:
-            if train_mode > 0:
+            if train_mode < 2:
                 weight_path = self._download_model(self.weight_url)
                 checkpoint = (
                     torch.load(weight_path)
