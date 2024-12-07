@@ -1,5 +1,4 @@
 import os
-from tqdm import tqdm
 from functools import partial
 from torch.utils.data import DataLoader
 from modelscope.msdatasets import MsDataset
@@ -23,25 +22,6 @@ def transform(example_batch, data_column: str, label_column: str, img_size: int)
             del example_batch[key]
 
     return example_batch
-
-
-def prepare_data(dataset: str, subset: str, label_col: str, use_wce: bool):
-    print("Preparing & loading data...")
-    ds = MsDataset.load(
-        dataset,
-        subset_name=subset,
-        cache_dir="./__pycache__",
-    )
-    classes = ds["test"].features[label_col].names
-    num_samples = []
-    if use_wce:
-        each_nums = {k: 0 for k in classes}
-        for item in tqdm(ds["train"], desc="Statistics by category for WCE loss"):
-            each_nums[classes[item[label_col]]] += 1
-
-        num_samples = list(each_nums.values())
-
-    return ds, classes, num_samples
 
 
 def load_data(

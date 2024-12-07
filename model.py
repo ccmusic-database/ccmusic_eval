@@ -1,6 +1,7 @@
 import os
 import torch
 import torch.nn as nn
+import numpy as np
 import torchvision.models as models
 from modelscope.msdatasets import MsDataset
 from utils import download
@@ -8,22 +9,33 @@ from utils import download
 TRAIN_MODES = ["linear_probe", "full_finetune", "no_pretrain"]
 
 
-class WCE(nn.CrossEntropyLoss):
-    def __init__(self, sample_sizes: list):
-        super(WCE, self).__init__()
-        if len(sample_sizes) > 0:
-            weights = torch.tensor(
-                [1.0 / size for size in sample_sizes],
-                dtype=torch.float32,
-            )
-            self.weight = weights / weights.sum()
+def get_weight(Ytr):  # (2493, 258, 6)
+    mp = Ytr.transpose(0, 2, 1)[:].sum(0).sum(0)  # (6,)
+    mmp = mp.astype(np.float32) / mp.sum()
+    cc = ((mmp.mean() / mmp) * ((1 - mmp) / (1 - mmp.mean()))) ** 0.3
+    inverse_feq = torch.from_numpy(cc)
+    return inverse_feq
+
+
+def sp_loss(fla_pred, target, gwe):
+    we = gwe.to("cuda" if torch.cuda.is_available() else "cpu")
+    wwe = 1
+    we *= wwe
+    loss = 0
+    for _, (out, fl_target) in enumerate(zip(fla_pred, target)):
+        twe = we.view(-1, 1).repeat(1, fl_target.size(1)).type(torch.cuda.FloatTensor)
+        ttwe = twe * fl_target.data + (1 - fl_target.data) * wwe
+        loss_fn = nn.BCEWithLogitsLoss(weight=ttwe, size_average=True)
+        print(target.shape)
+        loss += loss_fn(torch.squeeze(out), fl_target)
+
+    return loss
 
 
 class Net:
     def __init__(
         self,
         backbone: str,
-        cls_num: int,
         train_mode: int,
         imgnet_ver="v1",
         weight_path="",
@@ -54,11 +66,11 @@ class Net:
             for parma in self.model.parameters():
                 parma.requires_grad = self.full_finetune
 
-            self._set_classifier(cls_num, linear_output)
+            self._set_classifier(linear_output)
             self.model.train()
 
         else:
-            self._set_classifier(cls_num, linear_output)
+            self._set_classifier(linear_output)
             checkpoint = (
                 torch.load(weight_path)
                 if torch.cuda.is_available()

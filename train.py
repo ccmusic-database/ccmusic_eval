@@ -8,8 +8,8 @@ from datetime import datetime
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from plot import np, plot_acc, plot_loss, plot_confusion_matrix
 from utils import os, torch, tqdm, to_cuda, save_to_csv
-from data import DataLoader, prepare_data, load_data
-from model import Net, WCE, TRAIN_MODES
+from data import DataLoader, MsDataset, load_data
+from model import Net, sp_loss, TRAIN_MODES
 
 
 def eval_model(
@@ -175,13 +175,12 @@ def save_history(
 
 
 def train(
-    dataset: str,
-    subset: str,
     data_col: str,
-    label_col: str,
     backbone: str,
-    train_mode: int,
-    use_wce: bool,
+    dataset: str = "ccmusic-database/Guzheng_Tech99",
+    subset: str = "eval",
+    label_col: str = "label",
+    train_mode: int = 1,
     imgnet_ver="v1",
     batch_size=4,
     epochs=40,
@@ -189,9 +188,13 @@ def train(
     lr=0.001,
 ):
     # prepare data
-    ds, classes, num_samples = prepare_data(dataset, subset, label_col, use_wce)
+    ds = MsDataset.load(
+        dataset,
+        subset_name=subset,
+        cache_dir="./__pycache__",
+    )
     # init model
-    model = Net(backbone, len(classes), train_mode, imgnet_ver)
+    model = Net(backbone, train_mode, imgnet_ver)
     # load data
     traLoader, valLoader, tesLoader = load_data(
         ds,
@@ -202,7 +205,6 @@ def train(
         batch_size=batch_size,
     )
     # loss & optimizer
-    criterion = WCE(num_samples)
     optimizer = optim.SGD(model.parameters(), lr, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
@@ -219,7 +221,6 @@ def train(
     # gpu
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
-        criterion = criterion.cuda()
         for state in optimizer.state.values():
             for k, v in state.items():
                 if isinstance(v, torch.Tensor):
@@ -246,7 +247,7 @@ def train(
                 optimizer.zero_grad()
                 # forward + backward + optimize
                 outputs = model.forward(inputs)
-                loss: torch.Tensor = criterion(outputs, labels)
+                loss: torch.Tensor = sp_loss(outputs, labels)
                 loss.backward()
                 optimizer.step()
                 # print statistics
@@ -277,7 +278,6 @@ def train(
     save_history(
         log_dir,
         tesLoader,
-        classes,
         start_time,
         dataset,
         subset,
@@ -287,7 +287,6 @@ def train(
         imgnet_ver,
         train_mode,
         batch_size,
-        use_wce,
     )
 
 
