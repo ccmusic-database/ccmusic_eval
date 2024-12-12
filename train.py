@@ -8,7 +8,7 @@ from datetime import datetime
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 from plot import np, plot_acc, plot_loss, plot_confusion_matrix
 from utils import os, torch, tqdm, to_cuda, save_to_csv
-from data import DataLoader, MsDataset, load_data
+from data import DataLoader, prepare_data, load_data
 from model import Net, sp_loss, TRAIN_MODES
 
 
@@ -99,7 +99,6 @@ def save_log(
     best_eval_acc: float,
     train_mode: int,
     batch_size: int,
-    use_wce: bool,
 ):
     log = f"""
 Backbone       : {backbone_name}
@@ -112,7 +111,6 @@ Batch size     : {batch_size}
 Start time     : {start_time.strftime('%Y-%m-%d %H:%M:%S')}
 Finish time    : {finish_time.strftime('%Y-%m-%d %H:%M:%S')}
 Time cost      : {(finish_time - start_time).seconds}s
-Use WCE loss   : {use_wce}
 Best train acc : {round(best_train_acc, 2)}%
 Best eval acc  : {round(best_eval_acc, 2)}%
 """
@@ -138,7 +136,6 @@ def save_history(
     imgnet_ver: str,
     train_mode: int,
     batch_size: int,
-    use_wce: bool,
 ):
     finish_time = datetime.now()
     cls_report, cm = test_model(
@@ -170,7 +167,6 @@ def save_history(
         max(val_acc_list),
         train_mode,
         batch_size,
-        use_wce,
     )
 
 
@@ -188,11 +184,7 @@ def train(
     lr=0.001,
 ):
     # prepare data
-    ds = MsDataset.load(
-        dataset,
-        subset_name=subset,
-        cache_dir="./__pycache__",
-    )
+    ds, we = prepare_data(dataset, subset, label_col)
     # init model
     model = Net(backbone, train_mode, imgnet_ver)
     # load data
@@ -247,7 +239,7 @@ def train(
                 optimizer.zero_grad()
                 # forward + backward + optimize
                 outputs = model.forward(inputs)
-                loss: torch.Tensor = sp_loss(outputs, labels)
+                loss: torch.Tensor = sp_loss(outputs, labels, we)
                 loss.backward()
                 optimizer.step()
                 # print statistics
@@ -293,16 +285,15 @@ def train(
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     parser = argparse.ArgumentParser(description="train")
-    parser.add_argument("--ds", type=str, default="ccmusic-database/bel_canto")
+    parser.add_argument("--ds", type=str, default="ccmusic-database/Guzheng_Tech99")
     parser.add_argument("--subset", type=str, default="eval")
-    parser.add_argument("--data", type=str, default="mel")
+    parser.add_argument("--data", type=str, default="chroma")
     parser.add_argument("--label", type=str, default="label")
     parser.add_argument("--model", type=str, default="squeezenet1_1")
     parser.add_argument("--imgnet", type=str, default="v1")
     parser.add_argument("--mode", type=int, default=1)
     parser.add_argument("--bsz", type=int, default=4)
     parser.add_argument("--eps", type=int, default=40)
-    parser.add_argument("--wce", type=bool, default=True)
     args = parser.parse_args()
     train(
         dataset=args.ds,
@@ -314,5 +305,4 @@ if __name__ == "__main__":
         train_mode=args.mode,
         batch_size=args.bsz,
         epochs=args.eps,
-        use_wce=args.wce,
     )

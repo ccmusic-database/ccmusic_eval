@@ -1,4 +1,7 @@
 import os
+import torch
+import numpy as np
+from tqdm import tqdm
 from functools import partial
 from torch.utils.data import DataLoader
 from modelscope.msdatasets import MsDataset
@@ -14,7 +17,7 @@ def transform(example_batch, data_column: str, label_column: str, img_size: int)
             Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]
     )
-    inputs = [compose(x.convert("RGB")) for x in example_batch[data_column]]
+    inputs = [compose(x) for x in example_batch[data_column]]
     example_batch[data_column] = inputs
     keys = list(example_batch.keys())
     for key in keys:
@@ -22,6 +25,31 @@ def transform(example_batch, data_column: str, label_column: str, img_size: int)
             del example_batch[key]
 
     return example_batch
+
+
+def get_weight(Ytr: np.ndarray):  # (2493, 258, 6)
+    mp = Ytr[:].sum(0).sum(0)  # (6,)
+    mmp = mp.astype(np.float32) / mp.sum()
+    cc = ((mmp.mean() / mmp) * ((1 - mmp) / (1 - mmp.mean()))) ** 0.3
+    inverse_feq = torch.from_numpy(cc)
+    return inverse_feq
+
+
+def prepare_data(dataset: str, subset: str, label_col: str):
+    print("Preparing & loading data...")
+    ds = MsDataset.load(
+        dataset,
+        subset_name=subset,
+        cache_dir="./__pycache__",
+    )
+    Ytr = []
+    for item in tqdm(ds["train"], desc="Loading trainset..."):
+        Ytr.append(item[label_col])
+
+    Ytr = np.array(Ytr)
+    inverse_feq = get_weight(Ytr.transpose(0, 2, 1))
+
+    return ds, inverse_feq
 
 
 def load_data(
