@@ -10,7 +10,7 @@ def transform(example_batch, data_column: str, label_column: str, img_size: int)
     compose = Compose(
         [
             Resize([img_size, img_size]),
-            RandomAffine(5),
+            # RandomAffine(5),
             ToTensor(),
             Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]
