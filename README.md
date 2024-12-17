@@ -21,8 +21,8 @@ python pip.py
 Run `eval.py` to evaluate and plot results
 
 ### Prerequisites Steps
-1. Download audios from <https://www.modelscope.cn/datasets/ccmusic-database/song_structure/resolve/master/data/audio.zip> to `./MSA_dataset/audio`
-2. Download labels from <https://www.modelscope.cn/datasets/ccmusic-database/song_structure/resolve/master/data/label.zip> to `./MSA_dataset/Annotations`
+1. Download and extract [audios](https://www.modelscope.cn/datasets/ccmusic-database/song_structure/resolve/master/data/audio.zip) to `./MSA_dataset/audio`
+2. Download and extract [labels](https://www.modelscope.cn/datasets/ccmusic-database/song_structure/resolve/master/data/label.zip) to `./MSA_dataset/Annotations`
 3. Run `beat_track.py` first to get beat information, saved to `./MSA_dataset/references`
 4. Run `process.py` to perform structure analysis using beat information from `./MSA_dataset/references` to `./MSA_dataset/estimations`
 5. Run `txt_to_lab.py` to transform `.txt` to `.lab` as `mir_eval` need `.lab`
