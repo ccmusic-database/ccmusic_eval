@@ -6,7 +6,7 @@
 
 Classify spectrograms by fine-tuned pre-trained CNN models.
 
-<img src="./.github/eval.png">
+![](./.github/eval.png)
 
 ## Download
 ```bash
@@ -60,7 +60,7 @@ python train.py --ds ccmusic-database/bel_canto --subset eval --data cqt --label
 ```bibtex
 @dataset{zhaorui_liu_2021_5676893,
   author       = {Monan Zhou, Shenyang Xu, Zhaorui Liu, Zhaowen Wang, Feng Yu, Wei Li and Baoqiang Han},
-  title        = {CCMusic: an Open and Diverse Database for Chinese and General Music Information Retrieval Research},
+  title        = {CCMusic: an Open and Diverse Database for Chinese Music Information Retrieval Research},
   month        = {mar},
   year         = {2024},
   publisher    = {HuggingFace},
