@@ -8,17 +8,27 @@ from modelscope.msdatasets import MsDataset
 from torchvision.transforms import Compose, Resize, RandomAffine, ToTensor, Normalize
 
 
-def transform(example_batch, data_column: str, label_column: str, img_size: int):
+def transform(example_batch: dict, data_column: str, label_column: str, img_size: int):
     compose = Compose(
         [
             Resize([img_size, img_size]),
-            RandomAffine(5),
-            ToTensor(),
+            # RandomAffine(5),
+            # ToTensor(),
             Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]
     )
-    inputs = [compose(x) for x in example_batch[data_column]]
+    # x shape: [128, 258, 1] -> transpose -> [1, 128, 258]
+    inputs = []
+    for x in example_batch[data_column]:
+        x = np.array(x).transpose(2, 0, 1)
+        x = torch.from_numpy(x).repeat(3, 1, 1)
+        inputs.append(compose(x).float())
     example_batch[data_column] = inputs
+
+    # label shape: [bsz, 7, 258]?
+    label = [torch.from_numpy(np.array(x)) for x in example_batch[label_column]]
+    example_batch[label_column] = label
+
     keys = list(example_batch.keys())
     for key in keys:
         if not (key == data_column or key == label_column):
@@ -27,7 +37,8 @@ def transform(example_batch, data_column: str, label_column: str, img_size: int)
     return example_batch
 
 
-def get_weight(Ytr: np.ndarray):  # (2493, 258, 6)
+def get_weight(Ytr: np.ndarray):  # (2493, 258, 6) -> (data_sample, T, IPT). 6 should be 7?
+    # This func is for sp loss
     mp = Ytr[:].sum(0).sum(0)  # (6,)
     mmp = mp.astype(np.float32) / mp.sum()
     cc = ((mmp.mean() / mmp) * ((1 - mmp) / (1 - mmp.mean()))) ** 0.3
@@ -44,11 +55,11 @@ def prepare_data(dataset: str, subset: str, label_col: str):
     )
     Ytr = []
     for item in tqdm(ds["train"], desc="Loading trainset..."):
-        Ytr.append(item[label_col])
+        Ytr.append(item[label_col]) # training data dample: 2486
 
-    Ytr = np.array(Ytr)
-    inverse_feq = get_weight(Ytr.transpose(0, 2, 1))
-
+    Ytr = np.array(Ytr) # [2486, 7, 258]
+    inverse_feq = get_weight(Ytr.transpose(0, 2, 1)) # [2486, 258, 7]
+    # inverse_feq = []
     return ds, inverse_feq
 
 
@@ -70,9 +81,9 @@ def load_data(
 
     trainset = ds["train"].with_transform(
         partial(
-            transform,
-            data_column=data_col,
-            label_column=label_col,
+            transform, # for data agumentation
+            data_column=data_col, # mel, cqt, chroma
+            label_column=label_col, # == label
             img_size=input_size,
         )
     )
@@ -92,7 +103,8 @@ def load_data(
             img_size=input_size,
         )
     )
-    num_workers = os.cpu_count() // 2
+    # num_workers = os.cpu_count() // 2
+    num_workers = 0 
     traLoader = DataLoader(
         trainset,
         batch_size=bs,

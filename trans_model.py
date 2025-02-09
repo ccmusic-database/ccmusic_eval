@@ -7,7 +7,6 @@ import torchvision.models as models
 from modelscope.msdatasets import MsDataset
 from utils import download
 import itertools
-
 TRAIN_MODES = ["linear_probe", "full_finetune", "no_pretrain"]
 
 class Interpolate(nn.Module):
@@ -22,48 +21,7 @@ class Interpolate(nn.Module):
         return F.interpolate(x, size=self.size, scale_factor=self.scale_factor,
                              mode=self.mode, align_corners=self.align_corners)
 
-def compute_f1(preds, labels):
-    threshold = 0.5
-    preds = (preds >= threshold).int()
-    labels = (labels >= threshold).int()
-    TP_per_frame = (preds & labels).sum(dim=1)  # Sum over classes, shape: [bsz, T]
-    FP_per_frame = (preds & ~labels).sum(dim=1)  # False positives, shape: [bsz, T]
-    FN_per_frame = (~preds & labels).sum(dim=1)  
-
-    epsilon = 1e-7  # To avoid division by zero
-    precision_per_frame = TP_per_frame / (TP_per_frame + FP_per_frame + epsilon)  # Shape: [bsz, T]
-    recall_per_frame = TP_per_frame / (TP_per_frame + FN_per_frame + epsilon)  # Shape: [bsz, T]
-    f1_per_frame = 2 * precision_per_frame * recall_per_frame / (precision_per_frame + recall_per_frame + epsilon)  # Shape: [bsz, T]
-    frame_f1 = f1_per_frame.mean()
-    
-    return frame_f1
-
-def get_weight(Ytr):  # (2493, 258, 7)
-    mp = Ytr.transpose(0, 2, 1)[:].sum(0).sum(0)  # (7,)
-    mmp = mp.astype(np.float32) / mp.sum()
-    cc = ((mmp.mean() / mmp) * ((1 - mmp) / (1 - mmp.mean()))) ** 0.3
-    inverse_feq = torch.from_numpy(cc)
-    return inverse_feq
-
-
-def sp_loss(fla_pred, target, gwe):
-    we = gwe.to("cuda" if torch.cuda.is_available() else "cpu")
-    wwe = 1
-    we *= wwe
-    loss = 0
-    for _, (out, fl_target) in enumerate(zip(fla_pred, target)):
-        twe = we.view(-1, 1).repeat(1, fl_target.size(1)).type(torch.cuda.FloatTensor)
-        ttwe = twe * fl_target.data + (1 - fl_target.data) * wwe
-
-        loss_fn = nn.BCEWithLogitsLoss(weight=ttwe, size_average=True)
-        loss += loss_fn(torch.squeeze(out), fl_target)
-
-    return loss
-
-
-
-
-class Net:
+class t_Net:
     def __init__(
         self,
         backbone: str,
@@ -84,15 +42,18 @@ class Net:
         self.full_finetune = bool(train_mode > 0)
         self.type, self.weight_url, self.input_size = self._model_info(backbone)
         self.model: torch.nn.Module = eval("models.%s()" % backbone)
+        
         self.ori_T = ori_T
-        self.out_channel_before_classifier = 0
+        
+        if self.type == 'vit':
+            self.hidden_dim = self.model.hidden_dim
+            self.class_token = nn.Parameter(torch.zeros(1, 1, self.hidden_dim))
+        
+        elif self.type == 'swin_transformer':
+            self.hidden_dim = 768
 
-        self._set_channel_outsize() # set out channel size
         self.cls_num = cls_num
-
         if self.training:
-            self._set_classifier()
-            self._pseudo_foward()
             if train_mode < 2:
                 weight_path = self._download_model(self.weight_url)
                 checkpoint = (
@@ -100,12 +61,12 @@ class Net:
                     if torch.cuda.is_available()
                     else torch.load(weight_path, map_location="cpu")
                 )
-                self.model.load_state_dict(checkpoint, False) 
-                 
+                self.model.load_state_dict(checkpoint, False)
 
             for parma in self.model.parameters():
-                parma.requires_grad = self.full_finetune 
-            
+                parma.requires_grad = self.full_finetune
+
+            self._set_classifier()
             if torch.cuda.is_available():
                 self.model = self.model.cuda()
                 self.classifier = self.classifier.cuda()
@@ -113,13 +74,11 @@ class Net:
 
         else:
             self._set_classifier()
-            self._pseudo_foward()
             checkpoint = (
                 torch.load(weight_path)
                 if torch.cuda.is_available()
                 else torch.load(weight_path, map_location="cpu")
             )
-            # self.model.load_state_dict(checkpoint, False)
             self.model.load_state_dict(checkpoint['model'], False)
             self.classifier.load_state_dict(checkpoint['classifier'], False)
             if torch.cuda.is_available():
@@ -148,6 +107,7 @@ class Net:
             str(backbone_info["type"]),
             str(backbone_info["url"]),
             int(backbone_info["input_size"]),
+            # int(backbone_info['hidden_dim'])
         )
 
     def _download_model(self, weight_url: str, model_dir="./__pycache__"):
@@ -160,10 +120,11 @@ class Net:
 
     def _create_classifier(self):
         original_T_size = self.ori_T
+        self.avgpool = nn.AdaptiveAvgPool2d((1, None)) # F -> 1 
         upsample_module = nn.Sequential(
-            nn.AdaptiveAvgPool2d((1, None)), # F -> 1
+            # nn.AdaptiveAvgPool2d((1, None)), # F -> 1
             
-            nn.ConvTranspose2d(self.out_channel_before_classifier, 256, kernel_size=(1,4), stride=(1,2), padding=(0,1)),
+            nn.ConvTranspose2d(self.hidden_dim, 256, kernel_size=(1,4), stride=(1,2), padding=(0,1)),
             nn.ReLU(inplace=True),
             nn.BatchNorm2d(256),
 
@@ -188,44 +149,16 @@ class Net:
             nn.Conv2d(32, self.cls_num, kernel_size=(1,1)) 
         )
 
-        
         return upsample_module
-
-    def _set_channel_outsize(self):
-        #### get the output size before classifier ####
-        conv2d_out_ch = []
-        for name, module in self.model.named_modules():
-            if isinstance(module, torch.nn.Conv2d):
-                conv2d_out_ch.append(module.out_channels) 
-
-            if (
-                str(name).__contains__("classifier")
-                or str(name).__eq__("fc")
-                or str(name).__contains__("head")
-                # or hasattr(module, "classifier")
-            ):
-                if isinstance(module, torch.nn.Conv2d): 
-                    conv2d_out_ch.append(module.in_channels)
-                    break
-
-        self.out_channel_before_classifier = conv2d_out_ch[-1]
-
 
     def _set_classifier(self):
         #### set custom classifier ####
-        if self.type == 'resnet':
-            self.model.avgpool = nn.Identity()
-            self.model.fc = nn.Identity()
+        if self.type == "vit":
             self.classifier = self._create_classifier()
 
-        elif self.type == 'vgg' or self.type == 'efficientnet' or self.type == 'convnext':
-            self.model.avgpool = nn.Identity()
-            self.model.classifier = nn.Identity()
+        elif self.type == 'swin_transformer':
             self.classifier = self._create_classifier()
 
-        elif self.type == 'squeezenet':
-            self.model.classifier = nn.Identity()
-            self.classifier = self._create_classifier()
 
         for parma in self.classifier.parameters():
             parma.requires_grad = True
@@ -233,25 +166,28 @@ class Net:
     def get_input_size(self):
         return self.input_size
 
-    def _pseudo_foward(self):
-        temp = torch.randn(4, 3, self.input_size, self.input_size)
-        out = self.model(temp)
-        self.H = int(np.sqrt(out.size(1) / self.out_channel_before_classifier))
-
     def forward(self, x):
         if torch.cuda.is_available():
             x = x.cuda()
-        
-        if self.type == 'convnext':
-            out = self.model(x)
-            out = self.classifier(out).squeeze()
-            return out
-        else:
 
-            out = self.model(x)
-            out = out.view(out.size(0), self.out_channel_before_classifier, self.H, self.H) 
-            out = self.classifier(out).squeeze()
-            return out
+        if self.type == 'vit':
+            x = self.model._process_input(x)
+            batch_class_token = self.class_token.expand(x.size(0), -1, -1).cuda()
+            x = torch.cat([batch_class_token, x], dim=1)
+            x = self.model.encoder(x)
+            x = x[:, 1:].permute(0, 2, 1) 
+            x = x.unsqueeze(2)  
+            x = self.classifier(x).squeeze() # # x shape: [bsz, hidden_dim, 1, seq_len]
+            return x
+
+        elif self.type == 'swin_transformer':
+            x = self.model.features(x) # [B, H, W, C]
+            x = x.permute(0, 3, 1, 2)
+            x = self.avgpool(x) # [B, C, 1, W]
+            x = self.classifier(x).squeeze()
+            return x
+
+
 
     def parameters(self):
         if self.full_finetune:

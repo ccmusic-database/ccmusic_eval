@@ -22,7 +22,7 @@ def smooth(y: list):
     return y
 
 
-def plot_acc(tra_acc_list: list, val_acc_list: list, save_path: str):
+def plot_f1(tra_acc_list: list, val_acc_list: list, save_path: str):
     x_acc = []
     for i in range(len(tra_acc_list)):
         x_acc.append(i + 1)
@@ -32,9 +32,9 @@ def plot_acc(tra_acc_list: list, val_acc_list: list, save_path: str):
     y2 = np.array(val_acc_list)
     max1 = np.argmax(y1)
     max2 = np.argmax(y2)
-    plt.title("Accuracy of training and validation", fontweight="bold")
+    plt.title("F1 of training and validation", fontweight="bold")
     plt.xlabel("Epoch")
-    plt.ylabel("Accuracy(%)")
+    plt.ylabel("F1 (%)")
     plt.plot(x, y1, label="Training")
     plt.plot(x, y2, label="Validation")
     plt.plot(1 + max1, y1[max1], "r-o")
@@ -42,7 +42,7 @@ def plot_acc(tra_acc_list: list, val_acc_list: list, save_path: str):
     show_point(max1, y1)
     show_point(max2, y2)
     plt.legend()
-    plt.savefig(save_path + "/acc.pdf", bbox_inches="tight")
+    plt.savefig(save_path + "/F1.pdf", bbox_inches="tight")
     plt.close()
 
 

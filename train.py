@@ -4,13 +4,14 @@ import warnings
 import pandas as pd
 import torch.utils.data
 import torch.optim as optim
+import torch.nn.functional as F
 from datetime import datetime
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
-from plot import np, plot_acc, plot_loss, plot_confusion_matrix
+# from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from plot import np, plot_f1, plot_loss, plot_confusion_matrix
 from utils import os, torch, tqdm, to_cuda, save_to_csv
 from data import DataLoader, prepare_data, load_data
-from model import Net, sp_loss, TRAIN_MODES
-
+from model import Net, sp_loss, TRAIN_MODES, compute_f1
+from trans_model import t_Net
 
 def eval_model(
     model: Net,
@@ -19,84 +20,95 @@ def eval_model(
     data_col: str,
     label_col: str,
     learning_rate: float,
-    best_valid_acc: float,
+    best_valid_f1: float,
     loss_list: list,
     log_dir: str,
 ):
-    y_true, y_pred = [], []
     with torch.no_grad():
+        f1 = []
         for data in tqdm(trainLoader, desc="Batch evaluation on trainset"):
             inputs = to_cuda(data[data_col])
-            labels: torch.Tensor = to_cuda(data[label_col])
-            outputs: torch.Tensor = model.forward(inputs)
-            predicts: torch.Tensor = torch.max(outputs.data, 1)[1]
-            y_true.extend(labels.tolist())
-            y_pred.extend(predicts.tolist())
+            labels = to_cuda(data[label_col])
+            outputs = model.forward(inputs)
+            predicts = F.sigmoid(outputs)
 
-        train_acc = 100.0 * accuracy_score(y_true, y_pred)
-        print(f"Training accuracy : {round(train_acc, 2)}%")
-        y_true, y_pred = [], []
+            frame_f1_mean = compute_f1(predicts, labels)
+            f1.append(frame_f1_mean)
+        train_f1 = sum(f1) / len(f1)
+        print(f"Training F1: {train_f1:.2f}")
+
+        f1 = []
         for data in tqdm(validLoader, desc="Batch evaluation on validset"):
             inputs, labels = to_cuda(data[data_col]), to_cuda(data[label_col])
             outputs = model.forward(inputs)
-            predicts = torch.max(outputs.data, 1)[1]
-            y_true.extend(labels.tolist())
-            y_pred.extend(predicts.tolist())
+            predicts = F.sigmoid(outputs)
+            
+            frame_f1_mean = compute_f1(predicts, labels)
+            f1.append(frame_f1_mean)
+        valid_f1 = sum(f1) / len(f1)
+        print(f"Validation F1 : {valid_f1:.2f}")
+    
+    train_f1, valid_f1 = train_f1.cpu().numpy(), valid_f1.cpu().numpy()
 
-        valid_acc = 100.0 * accuracy_score(y_true, y_pred)
-        print(f"Validation accuracy : {round(valid_acc, 2)}%")
-
-    save_to_csv(f"{log_dir}/acc.csv", [train_acc, valid_acc, learning_rate])
+    save_to_csv(f"{log_dir}/f1.csv", [train_f1, valid_f1, learning_rate])
     with open(f"{log_dir}/loss.csv", "a", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
         for loss in loss_list:
             writer.writerow([loss])
 
-    if valid_acc > best_valid_acc:
-        best_valid_acc = valid_acc
+    if valid_f1 > best_valid_f1:
+        best_valid_f1 = valid_f1
         torch.save(model.state_dict(), f"{log_dir}/save.pt")
         print("Model saved.")
 
-    return best_valid_acc
+    return best_valid_f1
 
 
 def test_model(
     backbone: str,
     testLoader: DataLoader,
-    classes: list,
+    # classes: list,
+    cls_num: int,
+    ori_T: int,
     data_col: str,
     label_col: str,
     log_dir: str,
 ):
-    model = Net(backbone, len(classes), 0, weight_path=f"{log_dir}/save.pt")
-    y_true, y_pred = [], []
+    if 'vit' in backbone or 'swin' in backbone:
+        model = t_Net(backbone, 0, cls_num, ori_T, weight_path=f"{log_dir}/save.pt")
+    else:
+        model = Net(backbone, 0, cls_num, ori_T,  weight_path=f"{log_dir}/save.pt")
+
+    f1 = []
     with torch.no_grad():
         for data in tqdm(testLoader, desc="Batch evaluation on testset"):
             inputs = to_cuda(data[data_col])
             labels: torch.Tensor = to_cuda(data[label_col])
             outputs = model.forward(inputs)
-            predicts: torch.Tensor = torch.max(outputs.data, 1)[1]
-            y_true.extend(labels.tolist())
-            y_pred.extend(predicts.tolist())
-
-    report = classification_report(y_true, y_pred, target_names=classes, digits=3)
-    cm = confusion_matrix(y_true, y_pred, normalize="all")
-    return report, cm
+            predicts = F.sigmoid(outputs)
+            
+            frame_f1_mean = compute_f1(predicts, labels)
+            f1.append(frame_f1_mean)
+        test_f1 = sum(f1) / len(f1)
+        print(f"Test F1 : {test_f1:.2f}")
+    return test_f1
 
 
 def save_log(
-    classes: list,
-    cm: np.ndarray,
+    # classes: list,
+    cls_num: int,
+    # cm: np.ndarray,
     start_time: datetime,
     finish_time: datetime,
-    cls_report: str,
+    # cls_report: str,
+    test_f1: torch.tensor,
     log_dir: str,
     backbone_name: str,
     dataset_name: str,
     data_col: str,
     label_col: str,
-    best_train_acc: float,
-    best_eval_acc: float,
+    best_train_f1: float,
+    best_eval_f1: float,
     train_mode: int,
     batch_size: int,
 ):
@@ -106,27 +118,29 @@ Training mode  : {TRAIN_MODES[train_mode]}
 Dataset        : {dataset_name}
 Data column    : {data_col}
 Label column   : {label_col}
-Class num      : {len(classes)}
+Class num      : {cls_num}
 Batch size     : {batch_size}
 Start time     : {start_time.strftime('%Y-%m-%d %H:%M:%S')}
 Finish time    : {finish_time.strftime('%Y-%m-%d %H:%M:%S')}
 Time cost      : {(finish_time - start_time).seconds}s
-Best train acc : {round(best_train_acc, 2)}%
-Best eval acc  : {round(best_eval_acc, 2)}%
+Best train f1 : {round(best_train_f1, 2)}%
+Best eval f1  : {round(best_eval_f1, 2)}%
 """
-    with open(f"{log_dir}/result.log", "w", encoding="utf-8") as f:
-        f.write(cls_report + log)
+    # with open(f"{log_dir}/result.log", "w", encoding="utf-8") as f:
+    #     f.write(cls_report + log)
 
-    # save confusion_matrix
-    np.savetxt(f"{log_dir}/mat.csv", cm, delimiter=",", encoding="utf-8")
-    plot_confusion_matrix(cm, classes, log_dir)
-    print(f"{cls_report}\nConfusion matrix :\n{cm.round(3)}\n{log}")
-
+    # # save confusion_matrix
+    # np.savetxt(f"{log_dir}/mat.csv", cm, delimiter=",", encoding="utf-8")
+    # plot_confusion_matrix(cm, classes, log_dir)
+    # print(f"{cls_report}\nConfusion matrix :\n{cm.round(3)}\n{log}")
+    with open(f'{log_dir}/test_f1.txt', 'w') as f:
+        f.write(str(test_f1.cpu().numpy()))
 
 def save_history(
     log_dir: str,
     testLoader: DataLoader,
-    classes: list,
+    # classes: list,
+    cls_num: int, 
     start_time: str,
     dataset: str,
     subset: str,
@@ -136,42 +150,55 @@ def save_history(
     imgnet_ver: str,
     train_mode: int,
     batch_size: int,
+    ori_T: int
 ):
     finish_time = datetime.now()
-    cls_report, cm = test_model(
-        backbone,
+    # cls_report, cm = test_model(
+    #     backbone,
+    #     testLoader,
+    #     classes,
+    #     data_col,
+    #     label_col,
+    #     log_dir,
+    # )
+    test_f1 = test_model(
+       backbone,
         testLoader,
-        classes,
+        # classes,
+        cls_num,
+        ori_T,
         data_col,
         label_col,
         log_dir,
     )
-    acc_list = pd.read_csv(f"{log_dir}/acc.csv")
-    tra_acc_list = acc_list["tra_acc_list"].tolist()
-    val_acc_list = acc_list["val_acc_list"].tolist()
+    f1_list = pd.read_csv(f"{log_dir}/f1.csv")
+    tra_f1_list = f1_list["tra_f1_list"].tolist()
+    val_f1_list = f1_list["val_f1_list"].tolist()
     loss_list = pd.read_csv(f"{log_dir}/loss.csv")["loss_list"].tolist()
-    plot_acc(tra_acc_list, val_acc_list, log_dir)
+    plot_f1(tra_f1_list, val_f1_list, log_dir)
     plot_loss(loss_list, log_dir)
     save_log(
-        classes,
-        cm,
+        # classes,
+        cls_num,
+        # cm,
         start_time,
         finish_time,
-        cls_report,
+        # cls_report,
+        test_f1,
         log_dir,
         backbone + (f" - ImageNet {imgnet_ver.upper()}" if train_mode < 2 else ""),
         f"{dataset} - {subset}",
         data_col,
         label_col,
-        max(tra_acc_list),
-        max(val_acc_list),
+        max(tra_f1_list),
+        max(val_f1_list),
         train_mode,
         batch_size,
     )
 
 
 def train(
-    data_col: str,
+    data_col: str, # mel, cqt or chroma
     backbone: str,
     dataset: str = "ccmusic-database/Guzheng_Tech99",
     subset: str = "eval",
@@ -183,10 +210,18 @@ def train(
     iteration=10,
     lr=0.001,
 ):
-    # prepare data
+    # prepare data, we is for sp_loss
     ds, we = prepare_data(dataset, subset, label_col)
     # init model
-    model = Net(backbone, train_mode, imgnet_ver)
+    temp = next(iter(ds['train']))
+
+    cls_num = len(temp[label_col])
+
+    original_T = len(temp[label_col][0])
+    if 'vit' in backbone or 'swin' in backbone:
+        model = t_Net(backbone, train_mode, cls_num, original_T, imgnet_ver)
+    else:
+        model = Net(backbone, train_mode, cls_num, original_T, imgnet_ver)
     # load data
     traLoader, valLoader, tesLoader = load_data(
         ds,
@@ -196,6 +231,7 @@ def train(
         str(model.model).find("BatchNorm") > 0,
         batch_size=batch_size,
     )
+
     # loss & optimizer
     optimizer = optim.SGD(model.parameters(), lr, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -219,13 +255,16 @@ def train(
                     state[k] = v.cuda()
 
     # start training
-    best_eval_acc = 0.0
+    best_eval_f1 = 0.0
     start_time = datetime.now()
     log_dir = f"./logs/{dataset.replace('/', '_')}/{backbone}_{data_col}_{start_time.strftime('%Y-%m-%d_%H-%M-%S')}"
     os.makedirs(log_dir, exist_ok=True)
     save_to_csv(f"{log_dir}/loss.csv", ["loss_list"])
-    save_to_csv(f"{log_dir}/acc.csv", ["tra_acc_list", "val_acc_list", "lr_list"])
+    save_to_csv(f"{log_dir}/f1.csv", ["tra_f1_list", "val_f1_list", "lr_list"])
+    
     print(f"Start training {backbone} at {start_time.strftime('%Y-%m-%d %H:%M:%S')}...")
+
+
     # loop over the dataset multiple times
     for ep in range(epochs):
         loss_list = []
@@ -239,6 +278,7 @@ def train(
                 optimizer.zero_grad()
                 # forward + backward + optimize
                 outputs = model.forward(inputs)
+
                 loss: torch.Tensor = sp_loss(outputs, labels, we)
                 loss.backward()
                 optimizer.step()
@@ -254,31 +294,22 @@ def train(
                 running_loss = 0.0
                 pbar.update(1)
 
-        best_eval_acc = eval_model(
+        best_eval_f1 = eval_model(
             model,
             traLoader,
             valLoader,
             data_col,
             label_col,
             lr,
-            best_eval_acc,
+            best_eval_f1,
             loss_list,
             log_dir,
         )
         scheduler.step(loss.item())
 
-    save_history(
-        log_dir,
-        tesLoader,
-        start_time,
-        dataset,
-        subset,
-        data_col,
-        label_col,
-        backbone,
-        imgnet_ver,
-        train_mode,
-        batch_size,
+    save_history(log_dir, tesLoader, cls_num, start_time, dataset,
+        subset, data_col, label_col, backbone, imgnet_ver, train_mode,
+        batch_size, original_T
     )
 
 
