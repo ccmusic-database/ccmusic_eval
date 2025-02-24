@@ -40,13 +40,10 @@ pip install -r requirements.txt
 
 ## Cite
 ```bibtex
-@dataset{zhaorui_liu_2021_5676893,
-  author       = {Monan Zhou, Shenyang Xu, Zhaorui Liu, Zhaowen Wang, Feng Yu, Wei Li and Baoqiang Han},
-  title        = {CCMusic: an Open and Diverse Database for Chinese Music Information Retrieval Research},
-  month        = {mar},
-  year         = {2024},
-  publisher    = {HuggingFace},
-  version      = {1.2},
-  url          = {https://huggingface.co/ccmusic-database}
+@article{Zhou-2025,
+  title   = {CCMusic: an Open and Diverse Database for Chinese Music Information Retrieval Research},
+  author  = {Monan Zhou, Shenyang Xu, Zhaorui Liu, Zhaowen Wang, Feng Yu, Wei Li and Baoqiang Han},
+  journal = {Transactions of the International Society for Music Information Retrieval},
+  year    = {2025}
 }
 ```
