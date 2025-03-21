@@ -60,7 +60,7 @@ python train.py --ds ccmusic-database/bel_canto --subset eval --data cqt --label
 ```bibtex
 @article{Zhou-2025,
   title   = {CCMusic: an Open and Diverse Database for Chinese Music Information Retrieval Research},
-  author  = {Monan Zhou, Shenyang Xu, Zhaorui Liu, Zhaowen Wang, Feng Yu, Wei Li and Baoqiang Han},
+  author  = {Monan Zhou and Shenyang Xu and Zhaorui Liu and Zhaowen Wang and Feng Yu and Wei Li and Baoqiang Han},
   journal = {Transactions of the International Society for Music Information Retrieval},
   year    = {2025}
 }
