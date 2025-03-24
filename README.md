@@ -59,9 +59,12 @@ python train.py --ds ccmusic-database/bel_canto --subset eval --data cqt --label
 ## Cite
 ```bibtex
 @article{Zhou-2025,
-  title   = {CCMusic: an Open and Diverse Database for Chinese Music Information Retrieval Research},
   author  = {Monan Zhou and Shenyang Xu and Zhaorui Liu and Zhaowen Wang and Feng Yu and Wei Li and Baoqiang Han},
-  journal = {Transactions of the International Society for Music Information Retrieval},
-  year    = {2025}
+  journal = {Trans. Int. Society for Music Information Retrieval},
+  volume  = {8},
+  number  = {1},
+  pages   = {22--38},
+  year    = {2025},
+  title   = {CCMusic: An Open and Diverse Database for Chinese Music Information Retrieval Research}
 }
 ```
