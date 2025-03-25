@@ -4,7 +4,7 @@
 [![hf](https://img.shields.io/badge/HuggingFace-ccmusic-ffd21e.svg)](https://huggingface.co/ccmusic-database)
 [![ms](https://img.shields.io/badge/ModelScope-ccmusic-624aff.svg)](https://www.modelscope.cn/organization/ccmusic-database)
 [![arxiv](https://img.shields.io/badge/arXiv-2503.18802-b31b1b.svg)](https://arxiv.org/pdf/2503.18802.pdf)
-[![tismir](https://img.shields.io/badge/TISMIR-194-001447.svg)](https://transactions.ismir.net/articles/10.5334/tismir.194)
+[![tismir](https://img.shields.io/badge/DOI-10.5334/tismir.194-001447.svg)](https://doi.org/10.5334/tismir.194)
 
 Classify spectrograms by fine-tuned pre-trained CNN models.
 
