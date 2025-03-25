@@ -30,3 +30,17 @@ Run `eval.py` to evaluate and plot results
 3. Run `beat_track.py` first to get beat information, saved to `./MSA_dataset/references`
 4. Run `process.py` to perform structure analysis using beat information from `./MSA_dataset/references` to `./MSA_dataset/estimations`
 5. Run `txt_to_lab.py` to transform `.txt` to `.lab` as `mir_eval` need `.lab`
+
+## Cite
+```bibtex
+@dataset{zhaorui_liu_2021_5654924,
+  author    = {Zhaorui Liu and Zijin Li},
+  title     = {Music Data Sharing Platform for Academic Research (CCMusic)},
+  month     = nov,
+  year      = 2021,
+  publisher = {Zenodo},
+  version   = {1.0},
+  doi       = {10.5281/zenodo.5654924},
+  url       = {https://doi.org/10.5281/zenodo.5654924}
+}
+```

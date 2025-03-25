@@ -7,6 +7,6 @@ test/*
 .vscode/*
 debug.log
 results/*
-test.py
+test.*
 rename.sh
 MSA_dataset/*
