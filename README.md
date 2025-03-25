@@ -67,6 +67,7 @@ python train.py --ds ccmusic-database/bel_canto --subset eval --data cqt --label
   volume  = {8},
   number  = {1},
   pages   = {22--38},
+  month   = {Mar},
   year    = {2025},
   url     = {https://doi.org/10.5334/tismir.194},
   doi     = {10.5334/tismir.194}
