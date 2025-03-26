@@ -1,8 +1,8 @@
 # MSA Evaluation for CCMusic Database
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/monetjoe/ccmusic_eval/blob/msa/LICENSE)
+[![License: MIT](https://img.shields.io/github/license/monetjoe/ccmusic_eval.svg)](https://github.com/monetjoe/ccmusic_eval/blob/main/LICENSE)
 [![Python application](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml/badge.svg)](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml)
-[![hf](https://img.shields.io/badge/huggingface-song_structure-ffd21e.svg)](https://huggingface.co/ccmusic-database/song_structure)
-[![ms](https://img.shields.io/badge/modelscope-song_structure-816DF8.svg)](https://www.modelscope.cn/models/ccmusic-database/song_structure)
+[![hf](https://img.shields.io/badge/HuggingFace-song__structure-ffd21e.svg)](https://huggingface.co/ccmusic-database/song_structure)
+[![ms](https://img.shields.io/badge/ModelScope-song__structure-816DF8.svg)](https://www.modelscope.cn/models/ccmusic-database/song_structure)
 
 ![](https://www.modelscope.cn/models/ccmusic-database/song_structure/resolve/master/segment_results.jpg)
 
