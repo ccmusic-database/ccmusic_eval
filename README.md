@@ -4,7 +4,7 @@
 [![hf](https://img.shields.io/badge/HuggingFace-song__structure-ffd21e.svg)](https://huggingface.co/ccmusic-database/song_structure)
 [![ms](https://img.shields.io/badge/ModelScope-song__structure-816DF8.svg)](https://www.modelscope.cn/models/ccmusic-database/song_structure)
 
-![](https://www.modelscope.cn/models/ccmusic-database/song_structure/resolve/master/segment_results.jpg)
+![image](https://github.com/user-attachments/assets/6f15e10c-6b18-4ed3-b7b4-493b2c260058)
 
 ## Download
 ```bash
