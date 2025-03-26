@@ -21,7 +21,7 @@ conda activate py311
 pip install -r requirements.txt
 ```
 
-### Fixed Hyper Params
+### Fixed hyperparameters
 |     Param      | Value |   Range   |
 | :------------: | :---: | :-------: |
 |   iteration    |  10   |   train   |
