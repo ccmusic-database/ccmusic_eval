@@ -3,6 +3,8 @@
 [![Python application](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml)
 [![hf](https://img.shields.io/badge/HuggingFace-ccmusic-ffd21e.svg)](https://huggingface.co/ccmusic-database)
 [![ms](https://img.shields.io/badge/ModelScope-ccmusic-624aff.svg)](https://www.modelscope.cn/organization/ccmusic-database)
+[![arxiv](https://img.shields.io/badge/arXiv-2503.18802-b31b1b.svg)](https://arxiv.org/pdf/2503.18802.pdf)
+[![tismir](https://img.shields.io/badge/DOI-10.5334/tismir.194-001447.svg)](https://doi.org/10.5334/tismir.194)
 
 Detect spectrograms by fine-tuned pre-trained CNN models.
 
@@ -41,9 +43,15 @@ pip install -r requirements.txt
 ## Cite
 ```bibtex
 @article{Zhou-2025,
-  title   = {CCMusic: an Open and Diverse Database for Chinese Music Information Retrieval Research},
-  author  = {Monan Zhou, Shenyang Xu, Zhaorui Liu, Zhaowen Wang, Feng Yu, Wei Li and Baoqiang Han},
+  author  = {Monan Zhou and Shenyang Xu and Zhaorui Liu and Zhaowen Wang and Feng Yu and Wei Li and Baoqiang Han},
+  title   = {CCMusic: An Open and Diverse Database for Chinese Music Information Retrieval Research},
   journal = {Transactions of the International Society for Music Information Retrieval},
-  year    = {2025}
+  volume  = {8},
+  number  = {1},
+  pages   = {22--38},
+  month   = {Mar},
+  year    = {2025},
+  url     = {https://doi.org/10.5334/tismir.194},
+  doi     = {10.5334/tismir.194}
 }
 ```
