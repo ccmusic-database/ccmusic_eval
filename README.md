@@ -41,7 +41,7 @@ python train.py --ds ccmusic-database/bel_canto --subset eval --data cqt --label
 | --eps    | Epoch number                                                                                                     | Default is 40                                                                                                                                                                              | int    |
 | --wce    | Whether to use weighted cross entropy                                                                            | False, True                                                                                                                                                                                | bool   |
 
-### Fixed Hyper Params
+### Fixed hyperparameters
 |     Param      | Value |   Range   |
 | :------------: | :---: | :-------: |
 |   iteration    |  10   |   train   |
