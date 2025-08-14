@@ -2,7 +2,6 @@ import csv
 import argparse
 import warnings
 import pandas as pd
-import torch.utils.data
 import torch.optim as optim
 from datetime import datetime
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
@@ -209,7 +208,6 @@ def train(
         mode="min",
         factor=0.1,
         patience=5,
-        verbose=True,
         threshold=lr,
         threshold_mode="rel",
         cooldown=0,
