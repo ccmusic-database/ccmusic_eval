@@ -1,6 +1,6 @@
 # Evaluation Framework for CCMusic Database Classification Tasks
-[![License: MIT](https://img.shields.io/github/license/monetjoe/ccmusic_eval.svg)](https://github.com/monetjoe/ccmusic_eval/blob/main/LICENSE)
-[![Python application](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml)
+[![License: MIT](https://img.shields.io/github/license/ccmusic-database/ccmusic_eval.svg)](https://github.com/ccmusic-database/ccmusic_eval/blob/main/LICENSE)
+[![Python application](https://github.com/ccmusic-database/ccmusic_eval/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/ccmusic-database/ccmusic_eval/actions/workflows/python-app.yml)
 [![hf](https://img.shields.io/badge/HuggingFace-ccmusic-ffd21e.svg)](https://huggingface.co/ccmusic-database)
 [![ms](https://img.shields.io/badge/ModelScope-ccmusic-624aff.svg)](https://www.modelscope.cn/organization/ccmusic-database)
 [![arxiv](https://img.shields.io/badge/arXiv-2503.18802-b31b1b.svg)](https://arxiv.org/pdf/2503.18802.pdf)
@@ -12,7 +12,7 @@ Classify spectrograms by fine-tuned pre-trained CNN models.
 
 ## Download
 ```bash
-git clone git@github.com:monetjoe/ccmusic_eval.git
+git clone git@github.com:ccmusic-database/ccmusic_eval.git
 cd ccmusic_eval
 ```
 
@@ -34,7 +34,7 @@ python train.py --ds ccmusic-database/bel_canto --subset eval --data cqt --label
 | --subset | The subset of the dataset                                                                                        | For examples: default, eval                                                                                                                                                                | string |
 | --data   | Input data colum of the dataset                                                                                  | For examples: mel, cqt, chroma                                                                                                                                                             | string |
 | --label  | Label colum of the dataset                                                                                       | For examples: label, singing_method, gender                                                                                                                                                | string |
-| --model  | Select a [CV backbone](https://huggingface.co/datasets/monetjoe/cv_backbones) to train                           | [Supported backbones](https://www.modelscope.cn/datasets/monetjoe/cv_backbones/dataPeview)                                                                                                 | string |
+| --model  | Select a [CV backbone](https://huggingface.co/datasets/ccmusic-database/cv_backbones) to train                   | [Supported backbones](https://www.modelscope.cn/datasets/ccmusic-database/cv_backbones/dataPeview)                                                                                         | string |
 | --imgnet | ImageNet version the backbone was pretrained on                                                                  | v1, v2                                                                                                                                                                                     | string |
 | --mode   | Training mode ID                                                                                                 | 0=linear_probe, 1=full_finetune, 2=no_pretrain                                                                                                                                             | int    |
 | --bsz    | Batch size                                                                                                       | For examples: 1, 2, 4, 8, 16, 32, 64, 128..., default is 4                                                                                                                                 | int    |
