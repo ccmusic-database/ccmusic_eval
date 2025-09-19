@@ -1,6 +1,6 @@
 # MSA Evaluation for CCMusic Database
-[![License: MIT](https://img.shields.io/github/license/monetjoe/ccmusic_eval.svg)](https://github.com/monetjoe/ccmusic_eval/blob/main/LICENSE)
-[![Python application](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml/badge.svg)](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml)
+[![License: MIT](https://img.shields.io/github/license/ccmusic-database/ccmusic_eval.svg)](https://github.com/ccmusic-database/ccmusic_eval/blob/main/LICENSE)
+[![Python application](https://github.com/ccmusic-database/ccmusic_eval/actions/workflows/python-app.yml/badge.svg)](https://github.com/ccmusic-database/ccmusic_eval/actions/workflows/python-app.yml)
 [![hf](https://img.shields.io/badge/HuggingFace-song__structure-ffd21e.svg)](https://huggingface.co/ccmusic-database/song_structure)
 [![ms](https://img.shields.io/badge/ModelScope-song__structure-816DF8.svg)](https://www.modelscope.cn/models/ccmusic-database/song_structure)
 
@@ -8,7 +8,7 @@
 
 ## Download
 ```bash
-git clone -b msa git@github.com:monetjoe/ccmusic_eval.git
+git clone -b msa git@github.com:ccmusic-database/ccmusic_eval.git
 cd ccmusic_eval
 ```
 
