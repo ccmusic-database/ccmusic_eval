@@ -1,6 +1,6 @@
 # Evaluation Framework for CCMusic Database Detection Task
-[![License: MIT](https://img.shields.io/github/license/monetjoe/ccmusic_eval.svg)](https://github.com/monetjoe/ccmusic_eval/blob/main/LICENSE)
-[![Python application](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/monetjoe/ccmusic_eval/actions/workflows/python-app.yml)
+[![License: MIT](https://img.shields.io/github/license/ccmusic-database/ccmusic_eval.svg)](https://github.com/ccmusic-database/ccmusic_eval/blob/main/LICENSE)
+[![Python application](https://github.com/ccmusic-database/ccmusic_eval/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/ccmusic-database/ccmusic_eval/actions/workflows/python-app.yml)
 [![hf](https://img.shields.io/badge/HuggingFace-ccmusic-ffd21e.svg)](https://huggingface.co/ccmusic-database)
 [![ms](https://img.shields.io/badge/ModelScope-ccmusic-624aff.svg)](https://www.modelscope.cn/organization/ccmusic-database)
 [![arxiv](https://img.shields.io/badge/arXiv-2503.18802-b31b1b.svg)](https://arxiv.org/pdf/2503.18802.pdf)
@@ -12,7 +12,7 @@ Detect spectrograms by fine-tuned pre-trained CNN models.
 
 ## Download
 ```bash
-git clone -b tech99 git@github.com:monetjoe/ccmusic_eval.git
+git clone -b tech99 git@github.com:ccmusic-database/ccmusic_eval.git
 cd ccmusic_eval
 ```
 
