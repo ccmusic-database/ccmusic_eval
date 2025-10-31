@@ -1,9 +1,7 @@
-torch==2.3.1+cu118
-torchvision==0.18.1+cu118
--f https://mirrors.aliyun.com/pytorch-wheels/cu118
-matplotlib
-scikit-learn
-numpy==1.26.4
 datasets==2.18
+matplotlib
 modelscope[framework]
--i https://pypi.tuna.tsinghua.edu.cn/simple
+numpy==1.26.4
+scikit-learn
+torch
+torchvision
