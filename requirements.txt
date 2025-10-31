@@ -1,10 +1,10 @@
-mir_eval
-matplotlib
-msaf
-jams
 Cython
-madmom
+jams
 librosa
-pillow==10.3
+madmom
+matplotlib
+mir_eval
+msaf
 numpy==1.20
+pillow==10.3
 tqdm
